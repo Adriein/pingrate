@@ -1,4 +1,4 @@
-package pingrate
+package main
 
 import (
 	"github.com/adriein/pingrate/internal/pingrate/server"
