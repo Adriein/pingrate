@@ -22,4 +22,9 @@ go.work
 go.work.sum
 
 # env file
-.env
+api/.env
+api/migrate
+.idea
+
+web/.env
+web/node_modules
