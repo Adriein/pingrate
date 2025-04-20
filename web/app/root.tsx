@@ -11,12 +11,13 @@ import {
 import {
   ColorSchemeScript,
   MantineProvider,
-  mantineHtmlProps
+  mantineHtmlProps, createTheme
 } from '@mantine/core';
 
 import { i18nextMiddleware } from "@app/middleware/i18next";
 
 import type { Route } from "./+types/root";
+import {PingrateTheme} from "@app/pingrate-theme";
 
 export const unstable_middleware = [i18nextMiddleware];
 
@@ -33,6 +34,8 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+const pingrateTheme = createTheme(PingrateTheme);
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
@@ -44,7 +47,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider theme={pingrateTheme}>
+          {children}
+        </MantineProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
