@@ -1,11 +1,16 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
+	"github.com/adriein/pingrate/internal/pingrate/health"
 	"github.com/adriein/pingrate/internal/pingrate/server"
 	"github.com/adriein/pingrate/internal/pingrate/shared/constants"
 	"github.com/adriein/pingrate/internal/pingrate/shared/helper"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -27,9 +32,34 @@ func main() {
 		log.Fatal(envCheckerErr.Error())
 	}
 
-	_, newServerErr := server.New(os.Getenv(constants.ServerPort))
+	api, newServerErr := server.New(os.Getenv(constants.ServerPort))
 
 	if newServerErr != nil {
 		log.Fatal(newServerErr.Error())
 	}
+
+	databaseDsn := fmt.Sprintf(
+		"postgresql://%s:%s@localhost:5432/%s?sslmode=disable",
+		os.Getenv(constants.DatabaseUser),
+		os.Getenv(constants.DatabasePassword),
+		os.Getenv(constants.DatabaseName),
+	)
+
+	database, dbConnErr := sql.Open("postgres", databaseDsn)
+
+	defer database.Close()
+
+	if dbConnErr != nil {
+		log.Fatal(dbConnErr.Error())
+	}
+
+	api.Route("GET /health", healthController(api))
+
+	api.Start()
+}
+
+func healthController(api *server.PingrateApiServer) http.HandlerFunc {
+	controller := health.NewController()
+
+	return api.NewHandler(controller.Handler)
 }

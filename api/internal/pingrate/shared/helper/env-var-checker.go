@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"fmt"
 	"github.com/rotisserie/eris"
 	"os"
 )
@@ -21,7 +20,7 @@ func (evc *EnvVarChecker) Check() error {
 		_, exists := os.LookupEnv(key)
 
 		if !exists {
-			return eris.New(fmt.Sprintf("Env var %s not set", key))
+			return eris.Errorf("Env var %s not set", key)
 		}
 	}
 
