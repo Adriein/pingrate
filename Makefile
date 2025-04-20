@@ -7,6 +7,10 @@ SHELL = /bin/sh
 help:        ## Print available targets.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
+.PHONY: run
+run:
+	@docker compose --env-file=./api/.env up -d
+
 .PHONY: create-migration
 create-migration:
 	@echo "Creating migrations"
