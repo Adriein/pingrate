@@ -1,3 +1,5 @@
+import '@mantine/core/styles.css';
+
 import {
   isRouteErrorResponse,
   Links,
@@ -6,10 +8,17 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import '@mantine/core/styles.css';
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps
+} from '@mantine/core';
+
+import { i18nextMiddleware } from "@app/middleware/i18next";
 
 import type { Route } from "./+types/root";
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
+
+export const unstable_middleware = [i18nextMiddleware];
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
