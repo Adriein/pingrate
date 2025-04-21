@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/adriein/pingrate/internal/pingrate/shared/types"
+	"github.com/adriein/pingrate/internal/shared/types"
 	"net/http"
 )
 

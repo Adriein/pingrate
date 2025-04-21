@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
-	"github.com/adriein/pingrate/internal/pingrate/shared/constants"
-	"github.com/adriein/pingrate/internal/pingrate/shared/helper"
-	"github.com/adriein/pingrate/internal/pingrate/shared/middleware"
-	"github.com/adriein/pingrate/internal/pingrate/shared/types"
+	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/middleware"
+	"github.com/adriein/pingrate/internal/shared/types"
 	"github.com/rotisserie/eris"
 	"log"
 	"log/slog"

@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/adriein/pingrate/internal/pingrate/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/google/uuid"
 	"log/slog"
 	"net/http"

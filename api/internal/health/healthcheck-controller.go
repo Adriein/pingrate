@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/adriein/pingrate/internal/pingrate/shared/helper"
-	"github.com/adriein/pingrate/internal/pingrate/shared/types"
+	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/types"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ func NewController() *Controller {
 	return &Controller{}
 }
 
-func (h *Controller) Handler(w http.ResponseWriter, _ *http.Request) error {
+func (c *Controller) Handler(w http.ResponseWriter, _ *http.Request) error {
 	response := types.ServerResponse{Ok: true}
 
 	if err := helper.Encode[types.ServerResponse](w, http.StatusCreated, response); err != nil {
