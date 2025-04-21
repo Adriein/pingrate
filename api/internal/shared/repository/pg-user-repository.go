@@ -111,7 +111,7 @@ func (r *PgUserRepository) FindOne(criteria types.Criteria) (types.User, error) 
 	}, nil
 }
 
-func (r *PgUserRepository) Save(entity types.User) error {
+func (r *PgUserRepository) Save(entity *types.User) error {
 	var query strings.Builder
 
 	query.WriteString(`INSERT INTO user `)
@@ -134,6 +134,6 @@ func (r *PgUserRepository) Save(entity types.User) error {
 	return nil
 }
 
-func (r *PgUserRepository) Update(_ types.User) error {
+func (r *PgUserRepository) Update(_ *types.User) error {
 	return eris.New("Method not implemented")
 }

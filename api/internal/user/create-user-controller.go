@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/rotisserie/eris"
 	"net/http"
 )
 
@@ -21,7 +22,7 @@ func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) e
 	var request types.User
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&request); decodeErr != nil {
-		return decodeErr
+		return eris.New(decodeErr.Error())
 	}
 
 	if serviceErr := c.service.Execute(&request); serviceErr != nil {

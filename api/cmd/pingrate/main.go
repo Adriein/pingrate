@@ -7,6 +7,8 @@ import (
 	"github.com/adriein/pingrate/internal/server"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/repository"
+	"github.com/adriein/pingrate/internal/user"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
@@ -55,11 +57,24 @@ func main() {
 
 	api.Route("GET /health", healthController(api))
 
+	// USER
+	api.Route("POST /users", userController(api, database))
+
 	api.Start()
 }
 
 func healthController(api *server.PingrateApiServer) http.HandlerFunc {
 	controller := health.NewController()
+
+	return api.NewHandler(controller.Handler)
+}
+
+func userController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+	userRepository := repository.NewPgUserRepository(database)
+
+	service := user.NewCreateUserService(userRepository)
+
+	controller := user.NewCreateUserController(service)
 
 	return api.NewHandler(controller.Handler)
 }
