@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/helper"
@@ -57,6 +58,20 @@ func (s *PingrateApiServer) Route(url string, handler http.Handler) {
 func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := handler(w, r); err != nil {
+			if errors.Is(err, types.ValidationError) {
+				response := types.ServerResponse{
+					Ok:    false,
+					Error: constants.ValidationError,
+					Data:  err.Error(),
+				}
+
+				if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusBadRequest, response); encodeErr != nil {
+					log.Fatal(eris.ToString(encodeErr, true))
+				}
+
+				return
+			}
+
 			response := types.ServerResponse{
 				Ok:    false,
 				Error: constants.ServerGenericError,

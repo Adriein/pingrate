@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"github.com/rotisserie/eris"
 	"strings"
 )
@@ -14,6 +16,19 @@ type User struct {
 	Password  string `json:"password"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
+}
+
+func (u *User) Validate() error {
+	err := validation.ValidateStruct(u,
+		validation.Field(&u.Email, validation.Required, is.Email),
+		validation.Field(&u.Password, validation.Required, validation.Length(8, 50)),
+	)
+
+	if err != nil {
+		return eris.Wrap(ValidationError, err.Error())
+	}
+
+	return nil
 }
 
 func (u *User) generateSalt(size int) ([]byte, error) {

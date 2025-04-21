@@ -24,4 +24,5 @@ const (
 
 const (
 	ServerGenericError = "SERVER_ERROR"
+	ValidationError    = "VALIDATION_ERROR"
 )
