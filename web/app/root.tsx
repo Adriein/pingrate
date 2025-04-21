@@ -1,3 +1,4 @@
+import "./app.css";
 import '@mantine/core/styles.css';
 
 import {
@@ -47,7 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <MantineProvider theme={pingrateTheme}>
+        <MantineProvider forceColorScheme={"light"} theme={pingrateTheme}>
           {children}
         </MantineProvider>
         <ScrollRestoration />

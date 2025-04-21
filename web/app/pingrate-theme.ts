@@ -1,9 +1,25 @@
 import {
     colorsTuple,
     DEFAULT_THEME,
-    type MantineColorsTuple,
-    type MantineTheme
+    type DefaultMantineColor,
+    type MantineColorsTuple, type MantineTheme,
 } from "@mantine/core";
+
+type PingrateExtendedColors =
+    | 'pingratePrimary'
+    | 'pingrateSecondary'
+    | 'pingrateAccent'
+    | 'pingrateBackground'
+
+type ExtendedCustomColors =
+    | PingrateExtendedColors
+    | DefaultMantineColor;
+
+declare module '@mantine/core' {
+    export interface MantineThemeColorsOverride {
+        colors: Record<ExtendedCustomColors, MantineColorsTuple>;
+    }
+}
 
 export const PingrateTheme: MantineTheme = {
     ...DEFAULT_THEME,
@@ -52,5 +68,5 @@ export const PingrateTheme: MantineTheme = {
             "#FF9900"
         ] as MantineColorsTuple,
         pingrateBackground: colorsTuple('#F9F9F9'),
-    },
+    } as Record<ExtendedCustomColors, MantineColorsTuple>,
 }

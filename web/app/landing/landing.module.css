@@ -1,0 +1,32 @@
+.mainContainer {
+    padding: 0 24px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    height: min-content;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap;
+    padding: 8px 0 0 0;
+}
+
+.headerContent {
+    display: flex;
+    flex: 1 0 0;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+    max-width: 1200px;
+}
+
+.headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.loginButton {
+
+}
