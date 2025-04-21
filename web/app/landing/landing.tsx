@@ -14,7 +14,7 @@ export function Landing() {
             <nav className={classes.header}>
                 <div className={classes.headerContent}>
                     <div className={classes.headerTitle}>
-                        <Avatar src={PingrateLogo} alt="Pingrate logo"/>
+                        <Avatar src={PingrateLogo} size={36} alt="Pingrate logo"/>
                         <Title
                             order={2}
                             styles={{
