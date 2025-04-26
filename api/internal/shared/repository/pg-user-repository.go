@@ -39,33 +39,32 @@ func (r *PgUserRepository) Find(criteria types.Criteria) ([]types.User, error) {
 	defer rows.Close()
 
 	var (
-		id         string
-		email      string
-		password   string
-		created_at string
-		updated_at string
+		us_id         string
+		us_email      string
+		us_password   string
+		us_created_at string
+		us_updated_at string
 	)
 
 	var results []types.User
 
 	for rows.Next() {
 		if scanErr := rows.Scan(
-			&id,
-			&email,
-			&password,
-			&password,
-			&created_at,
-			&updated_at,
+			&us_id,
+			&us_email,
+			&us_password,
+			&us_created_at,
+			&us_updated_at,
 		); scanErr != nil {
 			return nil, eris.New(scanErr.Error())
 		}
 
 		results = append(results, types.User{
-			Id:        id,
-			Email:     email,
-			Password:  password,
-			CreatedAt: created_at,
-			UpdatedAt: updated_at,
+			Id:        us_id,
+			Email:     us_email,
+			Password:  us_password,
+			CreatedAt: us_created_at,
+			UpdatedAt: us_updated_at,
 		})
 	}
 
@@ -80,20 +79,19 @@ func (r *PgUserRepository) FindOne(criteria types.Criteria) (types.User, error) 
 	}
 
 	var (
-		id         string
-		email      string
-		password   string
-		created_at string
-		updated_at string
+		us_id         string
+		us_email      string
+		us_password   string
+		us_created_at string
+		us_updated_at string
 	)
 
 	if scanErr := r.connection.QueryRow(query).Scan(
-		&id,
-		&email,
-		&password,
-		&password,
-		&created_at,
-		&updated_at,
+		&us_id,
+		&us_email,
+		&us_password,
+		&us_created_at,
+		&us_updated_at,
 	); scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {
 			return types.User{}, eris.New("Entity Business not found")
@@ -103,19 +101,19 @@ func (r *PgUserRepository) FindOne(criteria types.Criteria) (types.User, error) 
 	}
 
 	return types.User{
-		Id:        id,
-		Email:     email,
-		Password:  password,
-		CreatedAt: created_at,
-		UpdatedAt: updated_at,
+		Id:        us_id,
+		Email:     us_email,
+		Password:  us_password,
+		CreatedAt: us_created_at,
+		UpdatedAt: us_updated_at,
 	}, nil
 }
 
 func (r *PgUserRepository) Save(entity *types.User) error {
 	var query strings.Builder
 
-	query.WriteString(`INSERT INTO user `)
-	query.WriteString(`(id, email, password, created_at, updated_at) `)
+	query.WriteString(`INSERT INTO pi_user `)
+	query.WriteString(`(us_id, us_email, us_password, us_created_at, us_updated_at) `)
 	query.WriteString(`VALUES ($1, $2, $3, $4, $5);`)
 
 	_, err := r.connection.Exec(

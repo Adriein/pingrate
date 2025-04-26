@@ -19,6 +19,7 @@ type CreateUserRequest struct {
 
 func (cur *CreateUserRequest) Validate() error {
 	err := validation.ValidateStruct(cur,
+		validation.Field(&cur.Id, validation.Required, is.UUIDv4),
 		validation.Field(&cur.Email, validation.Required, is.Email),
 		validation.Field(&cur.Password, validation.Required, validation.Length(8, 50)),
 	)
