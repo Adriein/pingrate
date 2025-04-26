@@ -24,9 +24,10 @@
 .headerTitle {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
-.loginButton {
-
+.headerButtons {
+    display: flex;
+    gap: 8px;
 }
