@@ -4,9 +4,31 @@ import (
 	"encoding/json"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"github.com/rotisserie/eris"
 	"net/http"
+	"time"
 )
+
+type CreateUserRequest struct {
+	Id       string `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (cur *CreateUserRequest) Validate() error {
+	err := validation.ValidateStruct(cur,
+		validation.Field(&cur.Email, validation.Required, is.Email),
+		validation.Field(&cur.Password, validation.Required, validation.Length(8, 50)),
+	)
+
+	if err != nil {
+		return eris.Wrap(types.ValidationError, err.Error())
+	}
+
+	return nil
+}
 
 type CreateUserController struct {
 	service *CreateUserService
@@ -19,13 +41,25 @@ func NewCreateUserController(service *CreateUserService) *CreateUserController {
 }
 
 func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) error {
-	var request types.User
+	var request CreateUserRequest
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&request); decodeErr != nil {
 		return eris.New(decodeErr.Error())
 	}
 
-	if serviceErr := c.service.Execute(&request); serviceErr != nil {
+	if validationErr := request.Validate(); validationErr != nil {
+		return validationErr
+	}
+
+	user := types.User{
+		Id:        request.Id,
+		Email:     request.Email,
+		Password:  request.Password,
+		CreatedAt: time.Now().UTC().Format(time.DateTime),
+		UpdatedAt: time.Now().UTC().Format(time.DateTime),
+	}
+
+	if serviceErr := c.service.Execute(&user); serviceErr != nil {
 		return serviceErr
 	}
 

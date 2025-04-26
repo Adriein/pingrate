@@ -16,10 +16,6 @@ func NewCreateUserService(repository repository.UserRepository) *CreateUserServi
 }
 
 func (s *CreateUserService) Execute(user *types.User) error {
-	if validationErr := user.Validate(); validationErr != nil {
-		return validationErr
-	}
-
 	if securePassErr := user.SecurePassword(); securePassErr != nil {
 		return securePassErr
 	}
