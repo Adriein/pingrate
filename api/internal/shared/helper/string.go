@@ -1,6 +1,10 @@
 package helper
 
-import "unicode"
+import (
+	"github.com/rotisserie/eris"
+	"regexp"
+	"unicode"
+)
 
 func CamelToSnake(str string) string {
 	var result []rune
@@ -31,4 +35,16 @@ func SnakeToCamel(str string) string {
 		}
 	}
 	return string(result)
+}
+
+func ExtractJSON(input string) (string, error) {
+	re := regexp.MustCompile(`(\{.*\})`)
+
+	matches := re.FindStringSubmatch(input)
+
+	if len(matches) < 2 {
+		return "", eris.New("no JSON found")
+	}
+
+	return matches[1], nil
 }

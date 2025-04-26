@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
@@ -58,30 +59,75 @@ func (s *PingrateApiServer) Route(url string, handler http.Handler) {
 func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := handler(w, r); err != nil {
-			if errors.Is(err, types.ValidationError) {
-				response := types.ServerResponse{
+			response, serverResponseErr := s.newErrorServerResponse(err)
+
+			if serverResponseErr != nil {
+				res := types.ServerResponse{
 					Ok:    false,
-					Error: constants.ValidationError,
-					Data:  err.Error(),
+					Error: constants.ServerGenericError,
 				}
 
-				if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusBadRequest, response); encodeErr != nil {
+				encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, res)
+
+				if encodeErr != nil {
+					log.Fatal(eris.ToString(encodeErr, true))
+				}
+
+				slog.Error(fmt.Sprintf(
+					"%s TraceId=%s",
+					eris.ToString(err, true),
+					r.Header.Get("traceId"),
+				))
+
+				return
+			}
+
+			if response.Error != constants.ServerGenericError {
+				encodeErr := helper.Encode[types.ServerResponse](w, http.StatusOK, *response)
+
+				if encodeErr != nil {
 					log.Fatal(eris.ToString(encodeErr, true))
 				}
 
 				return
 			}
 
-			response := types.ServerResponse{
-				Ok:    false,
-				Error: constants.ServerGenericError,
-			}
+			encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, *response)
 
-			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, response); encodeErr != nil {
+			if encodeErr != nil {
 				log.Fatal(eris.ToString(encodeErr, true))
 			}
 
 			slog.Error(fmt.Sprintf("%s TraceId=%s", eris.ToString(err, true), r.Header.Get("traceId")))
 		}
 	}
+}
+
+func (s *PingrateApiServer) newErrorServerResponse(err error) (*types.ServerResponse, error) {
+	if errors.Is(err, types.ValidationError) {
+		strJson, jsonErr := helper.ExtractJSON(err.Error())
+
+		if jsonErr != nil {
+			return nil, eris.New(jsonErr.Error())
+		}
+
+		var result map[string]string
+
+		unMarshalErr := json.Unmarshal([]byte(strJson), &result)
+
+		if unMarshalErr != nil {
+			return nil, eris.New(unMarshalErr.Error())
+		}
+
+		return &types.ServerResponse{
+			Ok:    false,
+			Error: constants.ValidationError,
+			Data:  result,
+		}, nil
+	}
+
+	return &types.ServerResponse{
+		Ok:    false,
+		Error: constants.ServerGenericError,
+	}, nil
 }

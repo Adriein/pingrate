@@ -24,7 +24,13 @@ func (cur *CreateUserRequest) Validate() error {
 	)
 
 	if err != nil {
-		return eris.Wrap(types.ValidationError, err.Error())
+		validateJson, marshalErr := json.Marshal(err)
+
+		if marshalErr != nil {
+			return eris.New(marshalErr.Error())
+		}
+
+		return eris.Wrap(types.ValidationError, string(validateJson))
 	}
 
 	return nil
