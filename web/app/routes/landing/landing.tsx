@@ -53,7 +53,7 @@ export default function Home() {
                                 radius="xl"
                                 vars={(theme: MantineTheme) => ({
                                     root: {
-                                        '--button-bg': theme.colors.pingrateAccent[10],
+                                        '--button-bg': theme.colors.pingrateAccent[5],
                                         '--button-hover': theme.colors.pingrateAccent[7],
                                     },
                                 })}

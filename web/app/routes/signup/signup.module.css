@@ -1,0 +1,55 @@
+.container {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 24px;
+}
+
+.containerHeaderLogo {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.containerHeaderTitle {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.containerForm {
+    margin-top: 24px;
+}
+
+.form > * + * {
+    margin-top: 24px;
+}
+
+.formLink {
+    margin-top: 32px;
+    justify-content: center;
+    display: flex;
+    gap: 8px;
+}
+
+@media (min-width: 1024px) {
+    .container {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+}
+
+@media (min-width: 640px) {
+    .containerHeader {
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        max-width: 384px;
+    }
+
+    .containerForm {
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        max-width: 384px;
+    }
+}
