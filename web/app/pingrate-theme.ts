@@ -27,17 +27,17 @@ export const PingrateTheme: MantineTheme = {
         ...DEFAULT_THEME.colors,
         /** Index 10 is the original  */
         pingratePrimary: [
-            "#fffae0",
-            "#fff3ca",
-            "#ffe699",
-            "#ffd863",
-            "#ffcd36",
-            "#ffc518",
-            "#ffc102",
-            "#e3aa00",
-            "#ca9700",
-            "#af8200",
-            "#FFCC33",
+            "#fffbe2",
+            "#fff6cd",
+            "#ffeb9c",
+            "#ffe066",
+            "#ffd73a",
+            "#ffd120",
+            "#ffce10",
+            "#e3b600",
+            "#caa100",
+            "#ae8b00",
+            "#E6B800"
         ] as MantineColorsTuple,
         /** Index 10 is the original  */
         pingrateSecondary: [

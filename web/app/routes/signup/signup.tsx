@@ -44,13 +44,29 @@ export default function Signup() {
             </div>
             <div className={classes.containerForm}>
                 <form className={classes.form} action="#" method="POST">
-                    <Input.Wrapper label="Email" error="Input error">
+                    <Input.Wrapper
+                        label="Email"
+                        error="Input error"
+                        styles={{
+                            label: {
+                                color: theme.colors.pingrateSecondary[10]
+                            }
+                        }}
+                    >
                         <Input
                             placeholder="example@gmail.com"
                             leftSection={<IconAt size={16} />}
                         />
                     </Input.Wrapper>
-                    <Input.Wrapper label="Password" error="Input error">
+                    <Input.Wrapper
+                        label="Password"
+                        error="Input error"
+                        styles={{
+                            label: {
+                                color: theme.colors.pingrateSecondary[10]
+                            }
+                        }}
+                    >
                         <PasswordInput
                             leftSection={<IconLock size={16} />}
                             visible={visible}
@@ -59,20 +75,41 @@ export default function Signup() {
                     </Input.Wrapper>
                     <Checkbox
                         defaultChecked
-                        label="I agree to the Terms & Privacy"
+                        label={
+                            <>
+                                I agree to the{' '}
+                                <Anchor
+                                    href="https://mantine.dev"
+                                    target="_blank"
+                                    inherit
+                                    styles={{
+                                        root: {
+                                            color: theme.colors.pingratePrimary[10]
+                                        }
+                                    }}
+                                >
+                                    Terms & Privacy
+                                </Anchor>
+                            </>
+                        }
                         vars={(theme: MantineTheme) => ({
                             root: {
-                                '--checkbox-color': theme.colors.pingrateAccent[5],
+                                '--checkbox-color': theme.colors.pingratePrimary[6],
                             },
                         })}
+                        styles={{
+                            label: {
+                                color: theme.colors.pingrateSecondary[10]
+                            }
+                        }}
                     />
                     <Button
                         fullWidth
                         variant="filled"
                         vars={(theme: MantineTheme) => ({
                             root: {
-                                '--button-bg': theme.colors.pingrateAccent[5],
-                                '--button-hover': theme.colors.pingrateAccent[7],
+                                '--button-bg': theme.colors.pingratePrimary[6],
+                                '--button-hover': theme.colors.pingratePrimary[7],
                             },
                         })}
                     >
@@ -85,7 +122,7 @@ export default function Signup() {
                         size="sm"
                         styles={{
                             root: {
-                                color: theme.colors.pingrateAccent[5]
+                                color: theme.colors.pingratePrimary[10]
                             }
                         }}
                     >
