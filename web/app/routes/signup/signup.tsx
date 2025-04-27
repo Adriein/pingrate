@@ -15,6 +15,7 @@ import {
 import { IconAt, IconLock } from '@tabler/icons-react';
 import PingrateLogo from "@app/shared/img/pingrate-logo.png";
 import classes from "./signup.module.css";
+import {useForm, type UseFormReturnType} from "@mantine/form";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -26,6 +27,23 @@ export function meta({}: Route.MetaArgs) {
 export default function Signup() {
     const theme: MantineTheme = useMantineTheme();
     const [visible, { toggle }] = useDisclosure(false);
+
+    const form: UseFormReturnType<any> = useForm({
+        mode: 'uncontrolled',
+        initialValues: {
+            email: '',
+            password: '',
+            termsOfService: true,
+        },
+        validate: {
+            email: (value: string): null | string => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+        },
+    });
+
+    const handleSubmit = (values: typeof form.values) => {
+        console.log(values);
+    };
+
     return (
         <div className={classes.container}>
             <div className={classes.containerHeader}>
@@ -43,10 +61,12 @@ export default function Signup() {
                 </Title>
             </div>
             <div className={classes.containerForm}>
-                <form className={classes.form} action="#" method="POST">
+                <form onSubmit={form.onSubmit(handleSubmit)} className={classes.form} action="#" method="POST">
                     <Input.Wrapper
                         label="Email"
-                        error="Input error"
+                        withAsterisk
+                        key={form.key('email')}
+                        {...form.getInputProps('email')}
                         styles={{
                             label: {
                                 color: theme.colors.pingrateSecondary[10]
@@ -60,7 +80,9 @@ export default function Signup() {
                     </Input.Wrapper>
                     <Input.Wrapper
                         label="Password"
-                        error="Input error"
+                        withAsterisk
+                        key={form.key('password')}
+                        {...form.getInputProps('password')}
                         styles={{
                             label: {
                                 color: theme.colors.pingrateSecondary[10]
@@ -75,6 +97,8 @@ export default function Signup() {
                     </Input.Wrapper>
                     <Checkbox
                         defaultChecked
+                        key={form.key('termsOfService')}
+                        {...form.getInputProps('termsOfService', { type: 'checkbox' })}
                         label={
                             <>
                                 I agree to the{' '}
@@ -106,6 +130,7 @@ export default function Signup() {
                     <Button
                         fullWidth
                         variant="filled"
+                        type="submit"
                         vars={(theme: MantineTheme) => ({
                             root: {
                                 '--button-bg': theme.colors.pingratePrimary[6],
