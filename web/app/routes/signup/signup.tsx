@@ -15,13 +15,19 @@ import {
 import { IconAt, IconLock } from '@tabler/icons-react';
 import PingrateLogo from "@app/shared/img/pingrate-logo.png";
 import classes from "./signup.module.css";
-import {useForm, type UseFormReturnType} from "@mantine/form";
+import {hasLength, isEmail, isNotEmpty, useForm, type UseFormReturnType} from "@mantine/form";
+import React from "react";
 
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Pingrate" },
         { name: "description", content: "Signup page for Pingrate" },
     ];
+}
+
+export async function action({request}: Route.ActionArgs) {
+    const formData: FormData = await request.formData();
+    console.log(formData.toString());
 }
 
 export default function Signup() {
@@ -36,11 +42,34 @@ export default function Signup() {
             termsOfService: true,
         },
         validate: {
-            email: (value: string): null | string => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-        },
+            email: (value: string) => {
+                const validations = [
+                    isNotEmpty('Must add an email'),
+                    isEmail('Invalid email')
+                ];
+
+                const results: React.ReactNode[] = validations
+                    .map(validation => validation(value))
+                    .filter((result: React.ReactNode | null) => !!result);
+
+                return results[0];
+            },
+            password: (value: string) => {
+                const validations = [
+                    isNotEmpty('Must add a password'),
+                    hasLength({min: 8, max: 20}, 'Password must be at least 8 char long and max 20 char long'),
+                ];
+
+                const results: React.ReactNode[] = validations
+                    .map(validation => validation(value))
+                    .filter((result: React.ReactNode | null) => !!result);
+
+                return results[0];
+            },
+        }
     });
 
-    const handleSubmit = (values: typeof form.values) => {
+    const handleSubmit = (values: typeof form.values): void => {
         console.log(values);
     };
 
@@ -61,11 +90,12 @@ export default function Signup() {
                 </Title>
             </div>
             <div className={classes.containerForm}>
-                <form onSubmit={form.onSubmit(handleSubmit)} className={classes.form} action="#" method="POST">
+                <form onSubmit={form.onSubmit(handleSubmit)} className={classes.form}>
                     <Input.Wrapper
                         label="Email"
                         withAsterisk
                         key={form.key('email')}
+                        error={form.getInputProps('email').error}
                         {...form.getInputProps('email')}
                         styles={{
                             label: {
@@ -76,13 +106,16 @@ export default function Signup() {
                         <Input
                             placeholder="example@gmail.com"
                             leftSection={<IconAt size={16} />}
+                            onChange={form.getInputProps('email').onChange}
+                            onBlur={form.getInputProps('email').onBlur}
+                            onFocus={form.getInputProps('email').onFocus}
+                            defaultValue={form.getInputProps('email').defaultValue}
                         />
                     </Input.Wrapper>
                     <Input.Wrapper
                         label="Password"
                         withAsterisk
                         key={form.key('password')}
-                        {...form.getInputProps('password')}
                         styles={{
                             label: {
                                 color: theme.colors.pingrateSecondary[10]
@@ -93,6 +126,7 @@ export default function Signup() {
                             leftSection={<IconLock size={16} />}
                             visible={visible}
                             onVisibilityChange={toggle}
+                            {...form.getInputProps('password')}
                         />
                     </Input.Wrapper>
                     <Checkbox
