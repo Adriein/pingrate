@@ -1,22 +1,38 @@
+import React from "react";
+import { data, useFetcher } from "react-router";
+
 import type { Route } from "./+types/signup";
-import {useDisclosure} from "@mantine/hooks";
+import type { PingrateApiResponse } from "@app/shared/api/PingrateApiResponse";
+import type { MantineTheme } from "@mantine/core";
+import type { UseFormReturnType } from "@mantine/form";
+
+import { useDisclosure } from "@mantine/hooks";
+import { useMantineTheme } from "@mantine/core";
+
 import {
     Anchor,
     Avatar,
     Button,
     Checkbox,
     Input,
-    type MantineTheme,
     PasswordInput,
     Text,
     Title,
-    useMantineTheme
 } from "@mantine/core";
-import { IconAt, IconLock } from '@tabler/icons-react';
+
+import {
+    hasLength,
+    isEmail,
+    isNotEmpty,
+    useForm,
+} from "@mantine/form";
+
+import { IconAt, IconLock } from "@tabler/icons-react";
+
 import PingrateLogo from "@app/shared/img/pingrate-logo.png";
+import { signup } from "@app/shared/api/pingrate-api";
 import classes from "./signup.module.css";
-import {hasLength, isEmail, isNotEmpty, useForm, type UseFormReturnType} from "@mantine/form";
-import React from "react";
+import PingrateError from "@app/shared/component/error/pingrate-error";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -25,14 +41,25 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-export async function action({request}: Route.ActionArgs) {
+export async function action({request}: Route.ActionArgs){
     const formData: FormData = await request.formData();
-    console.log(formData.toString());
+
+    const response: PingrateApiResponse = await signup({
+        email: formData.get('email') as string,
+        password: formData.get('password') as string
+    });
+
+    if (!response.ok) {
+        return data({ error: "Something went wrong" }, { status: 500 });
+    }
 }
 
 export default function Signup() {
+    const fetcher = useFetcher();
     const theme: MantineTheme = useMantineTheme();
     const [visible, { toggle }] = useDisclosure(false);
+
+    const error = fetcher.data?.error;
 
     const form: UseFormReturnType<any> = useForm({
         mode: 'uncontrolled',
@@ -69,8 +96,8 @@ export default function Signup() {
         }
     });
 
-    const handleSubmit = (values: typeof form.values): void => {
-        console.log(values);
+    const handleSubmit = async (values: typeof form.values): Promise<void> => {
+        await fetcher.submit(values, {method: 'POST'})
     };
 
     return (
@@ -90,7 +117,7 @@ export default function Signup() {
                 </Title>
             </div>
             <div className={classes.containerForm}>
-                <form onSubmit={form.onSubmit(handleSubmit)} className={classes.form}>
+                <fetcher.Form onSubmit={form.onSubmit(handleSubmit)} className={classes.form}>
                     <Input.Wrapper
                         label="Email"
                         withAsterisk
@@ -106,7 +133,7 @@ export default function Signup() {
                         <Input
                             placeholder="example@gmail.com"
                             leftSection={<IconAt size={16} />}
-                            classNames={classes}
+                            error={form.getInputProps('email').error}
                             onChange={form.getInputProps('email').onChange}
                             onBlur={form.getInputProps('email').onBlur}
                             onFocus={form.getInputProps('email').onFocus}
@@ -167,6 +194,7 @@ export default function Signup() {
                         fullWidth
                         variant="filled"
                         type="submit"
+                        loading={fetcher.state !== "idle"}
                         vars={(theme: MantineTheme) => ({
                             root: {
                                 '--button-bg': theme.colors.pingratePrimary[6],
@@ -176,7 +204,7 @@ export default function Signup() {
                     >
                         Sign up
                     </Button>
-                </form>
+                </fetcher.Form>
                 <div className={classes.formLink}>
                     <Text size="sm" c="dimmed">Do you have an account?</Text>
                     <Anchor
@@ -191,6 +219,7 @@ export default function Signup() {
                     </Anchor>
                 </div>
             </div>
+            {error && <PingrateError message={error}/>}
         </div>
     );
 }
