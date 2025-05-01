@@ -106,6 +106,7 @@ export default function Signup() {
                         <Input
                             placeholder="example@gmail.com"
                             leftSection={<IconAt size={16} />}
+                            classNames={classes}
                             onChange={form.getInputProps('email').onChange}
                             onBlur={form.getInputProps('email').onBlur}
                             onFocus={form.getInputProps('email').onFocus}
@@ -126,6 +127,7 @@ export default function Signup() {
                             leftSection={<IconLock size={16} />}
                             visible={visible}
                             onVisibilityChange={toggle}
+                            classNames={classes}
                             {...form.getInputProps('password')}
                         />
                     </Input.Wrapper>

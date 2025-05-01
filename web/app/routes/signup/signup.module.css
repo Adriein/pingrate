@@ -31,6 +31,12 @@
     gap: 8px;
 }
 
+.input {
+    &:focus-within {
+        --input-bd: var(--mantine-color-pingratePrimary-6);
+    }
+}
+
 @media (min-width: 1024px) {
     .container {
         padding-left: 32px;
