@@ -1,5 +1,6 @@
 import React from "react";
 import { data, useFetcher } from "react-router";
+import { v4 as uuidv4 } from 'uuid';
 
 import type { Route } from "./+types/signup";
 import type { PingrateApiResponse } from "@app/shared/api/PingrateApiResponse";
@@ -45,6 +46,7 @@ export async function action({request}: Route.ActionArgs){
     const formData: FormData = await request.formData();
 
     const response: PingrateApiResponse = await signup({
+        id: uuidv4(),
         email: formData.get('email') as string,
         password: formData.get('password') as string
     });
@@ -52,6 +54,8 @@ export async function action({request}: Route.ActionArgs){
     if (!response.ok) {
         return data({ error: "Something went wrong" }, { status: 500 });
     }
+
+    return data({error: undefined});
 }
 
 export default function Signup() {

@@ -59,7 +59,7 @@ func (s *PingrateApiServer) Route(url string, handler http.Handler) {
 func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := handler(w, r); err != nil {
-			response, serverResponseErr := s.newErrorServerResponse(err)
+			response, httpCode, serverResponseErr := s.newErrorServerResponse(err)
 
 			if serverResponseErr != nil {
 				res := types.ServerResponse{
@@ -83,7 +83,7 @@ func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.H
 			}
 
 			if response.Error != constants.ServerGenericError {
-				encodeErr := helper.Encode[types.ServerResponse](w, http.StatusOK, *response)
+				encodeErr := helper.Encode[types.ServerResponse](w, httpCode, *response)
 
 				if encodeErr != nil {
 					log.Fatal(eris.ToString(encodeErr, true))
@@ -103,12 +103,12 @@ func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.H
 	}
 }
 
-func (s *PingrateApiServer) newErrorServerResponse(err error) (*types.ServerResponse, error) {
+func (s *PingrateApiServer) newErrorServerResponse(err error) (*types.ServerResponse, int, error) {
 	if errors.Is(err, types.ValidationError) {
 		strJson, jsonErr := helper.ExtractJSON(err.Error())
 
 		if jsonErr != nil {
-			return nil, eris.New(jsonErr.Error())
+			return nil, 500, eris.New(jsonErr.Error())
 		}
 
 		var result map[string]string
@@ -116,18 +116,18 @@ func (s *PingrateApiServer) newErrorServerResponse(err error) (*types.ServerResp
 		unMarshalErr := json.Unmarshal([]byte(strJson), &result)
 
 		if unMarshalErr != nil {
-			return nil, eris.New(unMarshalErr.Error())
+			return nil, 500, eris.New(unMarshalErr.Error())
 		}
 
 		return &types.ServerResponse{
 			Ok:    false,
 			Error: constants.ValidationError,
 			Data:  result,
-		}, nil
+		}, 400, nil
 	}
 
 	return &types.ServerResponse{
 		Ok:    false,
 		Error: constants.ServerGenericError,
-	}, nil
+	}, 500, nil
 }

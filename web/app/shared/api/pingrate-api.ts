@@ -1,6 +1,6 @@
 import {PingrateApiResponse} from "@app/shared/api/PingrateApiResponse";
 
-export type SignupForm = { email: string, password: string};
+export type SignupForm = { id: string, email: string, password: string};
 
 const PINGRATE_API_V1_URL: string = "http://localhost:4000/api/v1"
 
@@ -17,6 +17,10 @@ const post = async (resource: string, payload: Record<string, any>): Promise<Pin
 
         const response: Response = await fetch(request);
 
+        console.log(await response.json())
+        console.log(response)
+
+        // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
             return new PingrateApiResponse(
                 true,
