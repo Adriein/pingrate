@@ -133,6 +133,7 @@ export default function Signup() {
                         <Input
                             placeholder="example@gmail.com"
                             leftSection={<IconAt size={16} />}
+                            classNames={classes}
                             error={form.getInputProps('email').error}
                             onChange={form.getInputProps('email').onChange}
                             onBlur={form.getInputProps('email').onBlur}

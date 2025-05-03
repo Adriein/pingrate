@@ -1,34 +1,38 @@
 .errorCard {
     position: fixed;
-    bottom: 1rem;
+    bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #f9f9f9; /* brand background */
-    color: #3c3c3c; /* brand secondary */
-    border: 1px solid #e6b800; /* brand primary */
+    background-color: var(--mantine-color-pingrateBackground-1);
+    color: var(--mantine-color-pingrateSecondary-10);
+    border: 1px solid var(--mantine-color-pingratePrimary-6);
     padding: 1rem 1.5rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     max-width: 90%;
-    width: fit-content;
+    width: 100%;
     z-index: 1000;
     text-align: center;
     font-family: sans-serif;
-}
 
-.errorCard p {
-    margin: 0.5rem 0;
-    color: #3c3c3c;
-}
+    p {
+        margin: 0.5rem 0;
+        color: #3c3c3c;
+    }
 
-.errorCard strong {
-    display: block;
-    font-weight: bold;
-    color: #e6b800; /* brand primary */
-}
+    strong {
+        display: block;
+        font-weight: bold;
+        color: var(--mantine-color-pingratePrimary-6);
+    }
 
-.errorCard small {
-    display: block;
-    font-size: 0.85rem;
-    color: #ff9900; /* brand accent */
+    small {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--mantine-color-pingrateSecondary-10);
+    }
+
+    @media (min-width: 640px) {
+        width: fit-content;
+    }
 }
