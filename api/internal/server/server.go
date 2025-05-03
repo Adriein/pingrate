@@ -1,8 +1,6 @@
 package server
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/helper"
@@ -104,28 +102,6 @@ func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.H
 }
 
 func (s *PingrateApiServer) newErrorServerResponse(err error) (*types.ServerResponse, int, error) {
-	if errors.Is(err, types.ValidationError) {
-		strJson, jsonErr := helper.ExtractJSON(err.Error())
-
-		if jsonErr != nil {
-			return nil, 500, eris.New(jsonErr.Error())
-		}
-
-		var result map[string]string
-
-		unMarshalErr := json.Unmarshal([]byte(strJson), &result)
-
-		if unMarshalErr != nil {
-			return nil, 500, eris.New(unMarshalErr.Error())
-		}
-
-		return &types.ServerResponse{
-			Ok:    false,
-			Error: constants.ValidationError,
-			Data:  result,
-		}, 400, nil
-	}
-
 	return &types.ServerResponse{
 		Ok:    false,
 		Error: constants.ServerGenericError,

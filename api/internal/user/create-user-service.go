@@ -20,6 +20,14 @@ func (s *CreateUserService) Execute(user *types.User) error {
 		return securePassErr
 	}
 
+	criteria := types.NewCriteria().Equal("us_email", user.Email)
+
+	_, findOneErr := s.repository.FindOne(criteria)
+
+	if findOneErr == nil {
+		return types.UserAlreadyExistError
+	}
+
 	if err := s.repository.Save(user); err != nil {
 		return err
 	}

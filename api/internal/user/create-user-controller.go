@@ -2,6 +2,8 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/types"
 	"github.com/go-ozzo/ozzo-validation"
@@ -55,7 +57,33 @@ func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if validationErr := request.Validate(); validationErr != nil {
-		return validationErr
+		if errors.Is(validationErr, types.ValidationError) {
+			strJson, jsonErr := helper.ExtractJSON(validationErr.Error())
+
+			if jsonErr != nil {
+				return eris.New(jsonErr.Error())
+			}
+
+			var result map[string]string
+
+			unMarshalErr := json.Unmarshal([]byte(strJson), &result)
+
+			if unMarshalErr != nil {
+				return eris.New(unMarshalErr.Error())
+			}
+
+			response := types.ServerResponse{
+				Ok:    false,
+				Error: constants.ValidationError,
+				Data:  result,
+			}
+
+			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusBadRequest, response); encodeErr != nil {
+				return encodeErr
+			}
+
+			return nil
+		}
 	}
 
 	user := types.User{
@@ -67,6 +95,20 @@ func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if serviceErr := c.service.Execute(&user); serviceErr != nil {
+		if errors.Is(serviceErr, types.UserAlreadyExistError) {
+			response := types.ServerResponse{
+				Ok:    false,
+				Error: constants.ValidationError,
+				Data:  "user already exists",
+			}
+
+			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusBadRequest, response); encodeErr != nil {
+				return encodeErr
+			}
+
+			return nil
+		}
+
 		return serviceErr
 	}
 

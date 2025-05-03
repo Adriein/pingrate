@@ -17,7 +17,7 @@ func NewCriteriaToSqlService(entity interface{}) (*CriteriaToSqlService, error) 
 	table, _ := reflection.ExtractTableName(entity)
 
 	return &CriteriaToSqlService{
-		Table:      table,
+		Table:      "pi_" + table,
 		Reflection: reflection,
 	}, nil
 }

@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+var (
+	UserNotFoundError = eris.New("user not found")
+)
+
+var (
+	UserAlreadyExistError = eris.New("user already exists")
+)
+
 type User struct {
 	Id        string `json:"id"`
 	Email     string `json:"email"`

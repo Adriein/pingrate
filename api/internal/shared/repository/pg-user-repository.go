@@ -94,7 +94,7 @@ func (r *PgUserRepository) FindOne(criteria types.Criteria) (types.User, error) 
 		&us_updated_at,
 	); scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {
-			return types.User{}, eris.New("Entity Business not found")
+			return types.User{}, eris.Wrap(types.UserNotFoundError, "")
 		}
 
 		return types.User{}, eris.New(scanErr.Error())
