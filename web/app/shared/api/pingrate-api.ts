@@ -1,14 +1,19 @@
 import {PingrateApiResponse} from "@app/shared/api/PingrateApiResponse";
 
-export type SignupForm = { id: string, email: string, password: string};
-export type SignupResponse = { ok: boolean, data: { } | undefined, error: string | undefined }
-
 const PINGRATE_API_V1_URL: string = "http://localhost:4000/api/v1"
+
+//SIGNUP
+export type SignupForm = { id: string, email: string, password: string};
+export type SignupResponse = { ok: boolean, data: Record<string, string> | undefined, error: string | undefined }
+
+export const VALIDATION_ERROR: string = "VALIDATION_ERROR";
 
 export const signup = async (payload: SignupForm): Promise<PingrateApiResponse<SignupResponse>> => {
     return await post<SignupResponse>("/users", payload);
 };
 
+
+//SHARED
 const post = async <T>(resource: string, payload: Record<string, any>): Promise<PingrateApiResponse<T>> => {
     try {
         const request: Request = new Request(`${PINGRATE_API_V1_URL}${resource}`, {
@@ -18,19 +23,22 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
 
         const response: Response = await fetch(request);
 
-        console.log(await response.json())
-        console.log(response)
+        const body = await response.json();
+
+        console.log(body)
 
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
+            console.log('1')
             return new PingrateApiResponse<T>(
-                true,
-                await response.json(),
+                false,
+                body,
             );
         }
-
-        return new PingrateApiResponse<T>(true);
+        console.log('2')
+        return new PingrateApiResponse<T>(true, body);
     } catch (error: unknown) {
+        console.log(error)
         return new PingrateApiResponse<T>(
             false,
             undefined,

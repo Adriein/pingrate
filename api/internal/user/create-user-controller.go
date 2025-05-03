@@ -96,10 +96,16 @@ func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) e
 
 	if serviceErr := c.service.Execute(&user); serviceErr != nil {
 		if errors.Is(serviceErr, types.UserAlreadyExistError) {
+			value := struct {
+				Email string `json:"email"`
+			}{
+				Email: "Already in use",
+			}
+
 			response := types.ServerResponse{
 				Ok:    false,
 				Error: constants.ValidationError,
-				Data:  "user already exists",
+				Data:  value,
 			}
 
 			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusBadRequest, response); encodeErr != nil {

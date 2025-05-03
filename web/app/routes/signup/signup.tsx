@@ -31,7 +31,7 @@ import {
 import { IconAt, IconLock } from "@tabler/icons-react";
 
 import PingrateLogo from "@app/shared/img/pingrate-logo.png";
-import { signup } from "@app/shared/api/pingrate-api";
+import {signup, type SignupResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
 import classes from "./signup.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
 
@@ -45,13 +45,17 @@ export function meta({}: Route.MetaArgs) {
 export async function action({request}: Route.ActionArgs){
     const formData: FormData = await request.formData();
 
-    const response: PingrateApiResponse = await signup({
+    const response: PingrateApiResponse<SignupResponse> = await signup({
         id: uuidv4(),
         email: formData.get('email') as string,
         password: formData.get('password') as string
     });
 
     if (!response.ok) {
+        if (response.data?.error === VALIDATION_ERROR) {
+            return data({ error: response.data.data }, { status: 400 });
+        }
+
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
@@ -64,6 +68,7 @@ export default function Signup() {
     const [visible, { toggle }] = useDisclosure(false);
 
     const error = fetcher.data?.error;
+
 
     const form: UseFormReturnType<any> = useForm({
         mode: 'uncontrolled',
@@ -100,6 +105,9 @@ export default function Signup() {
         }
     });
 
+    console.log(error?.email)
+
+
     const handleSubmit = async (values: typeof form.values): Promise<void> => {
         await fetcher.submit(values, {method: 'POST'})
     };
@@ -126,8 +134,7 @@ export default function Signup() {
                         label="Email"
                         withAsterisk
                         key={form.key('email')}
-                        error={form.getInputProps('email').error}
-                        {...form.getInputProps('email')}
+                        error={form.getInputProps('email').error ?? error?.email}
                         styles={{
                             label: {
                                 color: theme.colors.pingrateSecondary[10]
@@ -138,7 +145,7 @@ export default function Signup() {
                             placeholder="example@gmail.com"
                             leftSection={<IconAt size={16} />}
                             classNames={classes}
-                            error={form.getInputProps('email').error}
+                            error={form.getInputProps('email').error ?? error?.email}
                             onChange={form.getInputProps('email').onChange}
                             onBlur={form.getInputProps('email').onBlur}
                             onFocus={form.getInputProps('email').onFocus}
@@ -224,7 +231,7 @@ export default function Signup() {
                     </Anchor>
                 </div>
             </div>
-            {error && <PingrateError message={error}/>}
+            {error && typeof error === 'string' && <PingrateError message={error}/>}
         </div>
     );
 }
