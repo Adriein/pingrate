@@ -27,9 +27,3 @@ const (
 	ServerGenericError = "SERVER_ERROR"
 	ValidationError    = "VALIDATION_ERROR"
 )
-
-// Constants
-
-const (
-	HTTP_AUTH_HEADER = "Authorization"
-)
