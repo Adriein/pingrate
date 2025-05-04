@@ -9,6 +9,7 @@ const (
 	ServerPort       = "SERVER_PORT"
 	Env              = "ENV"
 	Production       = "PRO"
+	JwtSecret        = "JWT_SECRET"
 )
 
 // Criteria
@@ -25,4 +26,10 @@ const (
 const (
 	ServerGenericError = "SERVER_ERROR"
 	ValidationError    = "VALIDATION_ERROR"
+)
+
+// Constants
+
+const (
+	HTTP_AUTH_HEADER = "Authorization"
 )

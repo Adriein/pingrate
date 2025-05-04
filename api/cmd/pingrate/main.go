@@ -28,6 +28,7 @@ func main() {
 		constants.DatabasePassword,
 		constants.DatabaseName,
 		constants.ServerPort,
+		constants.JwtSecret,
 	)
 
 	if envCheckerErr := checker.Check(); envCheckerErr != nil {
