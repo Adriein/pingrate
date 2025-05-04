@@ -13,7 +13,7 @@ type JWT struct {
 	Token string `json:"token"`
 }
 
-func Generate(email string) (*JWT, error) {
+func NewJwt(email string) (*JWT, error) {
 	claims := jwt.MapClaims{
 		"user": email,
 		"exp":  time.Now().Add(time.Hour * 24).Unix(), // 1 day expiration
@@ -21,7 +21,7 @@ func Generate(email string) (*JWT, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	stringToken, err := token.SignedString(os.Getenv(constants.JwtSecret))
+	stringToken, err := token.SignedString([]byte(os.Getenv(constants.JwtSecret)))
 
 	if err != nil {
 		return nil, eris.New(err.Error())

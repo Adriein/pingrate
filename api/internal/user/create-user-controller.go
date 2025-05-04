@@ -118,6 +118,22 @@ func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) e
 		return serviceErr
 	}
 
+	jwt, jwtErr := types.NewJwt(user.Email)
+
+	if jwtErr != nil {
+		return jwtErr
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    jwt.Token,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   false, // Set to true in production (requires HTTPS)
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	response := types.ServerResponse{Ok: true}
 
 	if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusCreated, response); encodeErr != nil {

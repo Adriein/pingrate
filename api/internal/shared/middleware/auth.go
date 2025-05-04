@@ -6,24 +6,24 @@ import (
 	"github.com/rotisserie/eris"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func NewAuthMiddleWare(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get(constants.HTTP_AUTH_HEADER)
+		cookie, cookieErr := r.Cookie("jwt")
 
-		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "Missing or invalid Authorization header", http.StatusUnauthorized)
+		if cookieErr != nil {
+			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
 			return
 		}
 
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		tokenStr := cookie.Value
 
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, eris.New("unexpected signing method")
 			}
+
 			return os.Getenv(constants.JwtSecret), nil
 		})
 
