@@ -1,5 +1,5 @@
 import React from "react";
-import { data, useFetcher } from "react-router";
+import {data, redirect, useFetcher} from "react-router";
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Route } from "./+types/signup";
@@ -59,7 +59,7 @@ export async function action({request}: Route.ActionArgs){
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
-    return data({error: undefined});
+    return redirect("/");
 }
 
 export default function Signup() {
