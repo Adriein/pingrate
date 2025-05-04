@@ -15,12 +15,9 @@ import {
   mantineHtmlProps, createTheme
 } from '@mantine/core';
 
-import { i18nextMiddleware } from "@app/middleware/i18next";
-
 import type { Route } from "./+types/root";
 import {PingrateTheme} from "@app/pingrate-theme";
 
-// export const unstable_middleware = [i18nextMiddleware];
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

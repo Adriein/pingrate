@@ -9,6 +9,8 @@ import classes from "./landing.module.css";
 
 import type { Route } from "./+types/landing";
 import {Link} from "react-router";
+import i18nextServer from "@app/language/i18n.server"
+import type {TFunction} from "i18next";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -16,8 +18,19 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Landing page for Pingrate" },
     ];
 }
+export async function loader({ request }: Route.LoaderArgs) {
+    const t: TFunction = await i18nextServer.getFixedT("es", "landing");
+    const signup = t("signup");
 
-export default function Home() {
+    console.log(signup)
+
+    return { lang: { signup } }
+}
+
+
+export default function Home({loaderData}: Route.ComponentProps) {
+    const { lang } = loaderData;
+
     const theme: MantineTheme = useMantineTheme();
     return (
         <main className={classes.mainContainer}>
@@ -58,7 +71,7 @@ export default function Home() {
                                     },
                                 })}
                             >
-                                Sign Up
+                                {lang.signup}
                             </Button>
                         </Link>
                     </div>
