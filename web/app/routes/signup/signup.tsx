@@ -105,9 +105,6 @@ export default function Signup() {
         }
     });
 
-    console.log(error?.email)
-
-
     const handleSubmit = async (values: typeof form.values): Promise<void> => {
         await fetcher.submit(values, {method: 'POST'})
     };

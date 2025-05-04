@@ -25,8 +25,6 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
 
         const body = await response.json();
 
-        console.log(body)
-
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
             console.log('1')
