@@ -6,12 +6,6 @@ import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import type { RenderToPipeableStreamOptions } from "react-dom/server";
 import { renderToPipeableStream } from "react-dom/server";
-import i18nextServer from "@app/language/i18n.server";
-import {i18Config} from "@app/language/i18n.config";
-import {createInstance} from "i18next";
-import Backend from "i18next-fetch-backend";
-import {I18nextProvider, initReactI18next} from "react-i18next";
-import { resolve as fsresolve } from "node:path";
 
 export const streamTimeout = 5_000;
 
@@ -20,7 +14,6 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   routerContext: EntryContext,
-  loadContext: AppLoadContext
   // If you have middleware enabled:
   // loadContext: unstable_RouterContextProvider
 ) {
@@ -35,25 +28,8 @@ export default function handleRequest(
         ? "onAllReady"
         : "onShellReady";
 
-    let instance = createInstance();
-
-    let lng: string = await i18nextServer.getLocale(request);
-    let ns: string[] = i18nextServer.getRouteNamespaces(routerContext);
-
-    await instance
-      .use(initReactI18next) // Tell our instance to use react-i18next
-      .use(Backend)
-      .init({
-          ...i18Config, // spread the configuration
-          lng, // The locale we detected above
-          ns, // The namespaces the routes about to render wants to use
-          backend: { loadPath: fsresolve("./public/locales/{{lng}}/{{ns}}.json") },
-      });
-
     const { pipe, abort } = renderToPipeableStream(
-        <I18nextProvider i18n={instance}>
-            <ServerRouter context={routerContext} url={request.url} />
-        </I18nextProvider>,
+        <ServerRouter context={routerContext} url={request.url} />,
       {
         [readyOption]() {
           shellRendered = true;

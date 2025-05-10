@@ -17,7 +17,9 @@ import {
 
 import type { Route } from "./+types/root";
 import {PingrateTheme} from "@app/pingrate-theme";
+import {i18nextMiddleware} from "@app/middleware/i18next";
 
+export const unstable_middleware = [i18nextMiddleware];
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
