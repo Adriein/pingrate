@@ -47,6 +47,7 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ context }: Route.LoaderArgs) {
     const i18next: i18n = getInstance(context);
 
+    const title: string = i18next.t("signup.title");
     const signupButton: string = i18next.t("signup.button");
     const termsAndPrivacy: string = i18next.t("signup.termsAndPrivacy");
     const termsAndPrivacyLink: string = i18next.t("signup.termsAndPrivacyLink");
@@ -55,6 +56,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 
     return {
         lang: {
+            title,
             signupButton,
             termsAndPrivacy,
             termsAndPrivacyLink,
@@ -145,7 +147,7 @@ export default function Signup({loaderData}: Route.ComponentProps) {
                         }
                     }}
                 >
-                    Join Pingrate
+                    {lang.title}
                 </Title>
             </div>
             <div className={classes.containerForm}>

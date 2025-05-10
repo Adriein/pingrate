@@ -4,6 +4,7 @@ export default {
         loginButton: "Sign in",
     },
     signup: {
+        title: "Join Pingrate",
         button: "Sign up",
         termsAndPrivacy: "I agree to the",
         termsAndPrivacyLink: "Terms & Privacy",
