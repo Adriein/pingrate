@@ -34,12 +34,34 @@ import PingrateLogo from "@app/shared/img/pingrate-logo.png";
 import {signup, type SignupResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
 import classes from "./signup.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
+import type {i18n} from "i18next";
+import {getInstance} from "@app/middleware/i18next";
 
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Pingrate" },
         { name: "description", content: "Signup page for Pingrate" },
     ];
+}
+
+export async function loader({ context }: Route.LoaderArgs) {
+    const i18next: i18n = getInstance(context);
+
+    const signupButton: string = i18next.t("signup.button");
+    const termsAndPrivacy: string = i18next.t("signup.termsAndPrivacy");
+    const termsAndPrivacyLink: string = i18next.t("signup.termsAndPrivacyLink");
+    const loginShortcut: string = i18next.t("signup.loginShortcut");
+    const loginShortcutLink: string = i18next.t("signup.loginShortcutLink");
+
+    return {
+        lang: {
+            signupButton,
+            termsAndPrivacy,
+            termsAndPrivacyLink,
+            loginShortcut,
+            loginShortcutLink
+        }
+    }
 }
 
 export async function action({request}: Route.ActionArgs){
@@ -62,7 +84,8 @@ export async function action({request}: Route.ActionArgs){
     return redirect("/");
 }
 
-export default function Signup() {
+export default function Signup({loaderData}: Route.ComponentProps) {
+    const { lang } = loaderData;
     const fetcher = useFetcher();
     const theme: MantineTheme = useMantineTheme();
     const [visible, { toggle }] = useDisclosure(false);
@@ -173,7 +196,7 @@ export default function Signup() {
                         {...form.getInputProps('termsOfService', { type: 'checkbox' })}
                         label={
                             <>
-                                I agree to the{' '}
+                                {lang.termsAndPrivacy}{' '}
                                 <Anchor
                                     href="https://mantine.dev"
                                     target="_blank"
@@ -184,7 +207,7 @@ export default function Signup() {
                                         }
                                     }}
                                 >
-                                    Terms & Privacy
+                                    {lang.termsAndPrivacyLink}
                                 </Anchor>
                             </>
                         }
@@ -211,11 +234,11 @@ export default function Signup() {
                             },
                         })}
                     >
-                        Sign up
+                        {lang.signupButton}
                     </Button>
                 </fetcher.Form>
                 <div className={classes.formLink}>
-                    <Text size="sm" c="dimmed">Do you have an account?</Text>
+                    <Text size="sm" c="dimmed">{lang.loginShortcut}</Text>
                     <Anchor
                         size="sm"
                         styles={{
@@ -224,7 +247,7 @@ export default function Signup() {
                             }
                         }}
                     >
-                        Sign in
+                        {lang.loginShortcutLink}
                     </Anchor>
                 </div>
             </div>
