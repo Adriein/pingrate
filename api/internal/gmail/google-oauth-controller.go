@@ -1,4 +1,4 @@
-package oauth
+package gmail
 
 import (
 	"github.com/adriein/pingrate/internal/shared/helper"
@@ -9,11 +9,11 @@ import (
 )
 
 type GoogleOauthController struct {
-	service *GoogleOauthControllerService
+	service *GoogleOauthCallbackService
 }
 
-func NewGoogleAuthHandler(
-	service *GoogleOauthControllerService,
+func NewGoogleAuthController(
+	service *GoogleOauthCallbackService,
 ) *GoogleOauthController {
 	return &GoogleOauthController{
 		service: service,

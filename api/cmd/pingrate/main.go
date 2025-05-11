@@ -3,10 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/adriein/pingrate/internal/gmail"
 	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/server"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/external"
 	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/shared/repository"
 	"github.com/adriein/pingrate/internal/user"
 	"github.com/joho/godotenv"
@@ -58,10 +61,17 @@ func main() {
 		log.Fatal(dbConnErr.Error())
 	}
 
+	authMiddlewareChain := middleware.NewMiddlewareChain(
+		middleware.NewAuthMiddleWare,
+	)
+
 	api.Route("GET /health", healthController(api))
 
 	// USER
 	api.Route("POST /users", userController(api, database))
+
+	// INTEGRATIONS
+	api.Route("POST /integrations/gmail", authMiddlewareChain.ApplyOn(googleIntegrationController(api, database)))
 
 	api.Start()
 }
@@ -78,6 +88,15 @@ func userController(api *server.PingrateApiServer, database *sql.DB) http.Handle
 	service := user.NewCreateUserService(userRepository)
 
 	controller := user.NewCreateUserController(service)
+
+	return api.NewHandler(controller.Handler)
+}
+func googleIntegrationController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+	userRepository := repository.NewPgUserRepository(database)
+
+	service := gmail.NewGoogleOauthCallbackService(userRepository, external.NewGoogleApi())
+
+	controller := gmail.NewGoogleAuthController(service)
 
 	return api.NewHandler(controller.Handler)
 }
