@@ -29,6 +29,8 @@ func main() {
 		constants.DatabaseName,
 		constants.ServerPort,
 		constants.JwtSecret,
+		constants.GoogleClientId,
+		constants.GoogleClientSecret,
 	)
 
 	if envCheckerErr := checker.Check(); envCheckerErr != nil {

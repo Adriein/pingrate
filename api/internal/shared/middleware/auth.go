@@ -1,12 +1,15 @@
 package middleware
 
 import (
+	"context"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rotisserie/eris"
 	"net/http"
 	"os"
 )
+
+const UserContextKey = "user"
 
 func NewAuthMiddleWare(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,16 +35,17 @@ func NewAuthMiddleWare(handler http.Handler) http.Handler {
 			return
 		}
 
-		// Extract user ID and set it in the request context
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			_, ok := claims["user"].(string)
-			if !ok {
+			userEmail, okEmail := claims["user"].(string)
+			if !okEmail {
 				http.Error(w, "Invalid token claims", http.StatusUnauthorized)
 				return
 			}
-			// Attach to context
-			// ctx := context.WithValue(r.Context(), "userID", userID)
-			// next.ServeHTTP(w, r.WithContext(ctx))
+
+			ctx := context.WithValue(r.Context(), "user", userEmail)
+
+			handler.ServeHTTP(w, r.WithContext(ctx))
+
 			return
 		}
 
