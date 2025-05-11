@@ -6,6 +6,6 @@ type GoogleOauthControllerService struct {
 	googleApi *external.GoogleApi
 }
 
-func (s *GoogleOauthControllerService) Execute(userId string) string {
-	return s.googleApi.GetAuthCodeUrlForUser(userId)
+func (s *GoogleOauthControllerService) Execute(userEmail string) string {
+	return s.googleApi.GetAuthCodeUrlForUser(userEmail)
 }

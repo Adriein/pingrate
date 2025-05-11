@@ -2,7 +2,9 @@ package oauth
 
 import (
 	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/rotisserie/eris"
 	"net/http"
 )
 
@@ -19,9 +21,13 @@ func NewGoogleAuthHandler(
 }
 
 func (h *GoogleOauthController) Handler(w http.ResponseWriter, r *http.Request) error {
-	r.c
+	userEmail, ok := r.Context().Value(middleware.UserContextKey).(string)
 
-	googleAuthUrl := h.service.Execute(userId)
+	if !ok {
+		return eris.New("User key inside the context is not a string")
+	}
+
+	googleAuthUrl := h.service.Execute(userEmail)
 
 	response := types.ServerResponse{
 		Ok:   true,
