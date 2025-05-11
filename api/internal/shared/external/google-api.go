@@ -23,7 +23,7 @@ func (g *GoogleApi) GetOauth2Config() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     os.Getenv(constants.GoogleClientId),
 		ClientSecret: os.Getenv(constants.GoogleClientSecret),
-		RedirectURL:  "http://localhost:4000/api/v1/oauth/oauth-callback",
+		RedirectURL:  "http://localhost:4000/api/v1/integrations/gmail/oauth-callback",
 		Endpoint:     google.Endpoint,
 		Scopes:       []string{gmail.GmailReadonlyScope},
 	}

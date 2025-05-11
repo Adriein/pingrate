@@ -71,7 +71,7 @@ func main() {
 	api.Route("POST /users", userController(api, database))
 
 	// INTEGRATIONS
-	api.Route("POST /integrations/gmail", authMiddlewareChain.ApplyOn(googleIntegrationController(api, database)))
+	api.Route("GET /integrations/gmail/oauth", authMiddlewareChain.ApplyOn(googleIntegrationController(api, database)))
 
 	api.Start()
 }
