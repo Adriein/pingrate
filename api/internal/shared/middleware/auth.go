@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rotisserie/eris"
 	"net/http"
 	"os"
 )
@@ -23,12 +22,8 @@ func NewAuthMiddleWare(handler http.Handler) http.Handler {
 		tokenStr := cookie.Value
 
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, eris.New("unexpected signing method")
-			}
-
-			return os.Getenv(constants.JwtSecret), nil
-		})
+			return []byte(os.Getenv(constants.JwtSecret)), nil
+		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 		if err != nil || !token.Valid {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
