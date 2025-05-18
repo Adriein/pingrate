@@ -3,17 +3,16 @@ package types
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"github.com/rotisserie/eris"
 	"strings"
 )
 
 var (
-	UserNotFoundError = eris.New("user not found")
-)
-
-var (
-	UserAlreadyExistError = eris.New("user already exists")
+	UserAlreadyExistError      = eris.New("user already exists")
+	UserNotFoundError          = eris.New("user not found")
+	UserIncorrectPasswordError = eris.New("password incorrect")
 )
 
 type User struct {
@@ -62,4 +61,29 @@ func (u *User) SecurePassword() error {
 	u.Password = hashedAndSalted
 
 	return nil
+}
+
+func (u *User) CheckPassword(inputPassword string) bool {
+	parts := strings.Split(u.Password, "$")
+
+	if len(parts) != 2 {
+		return false
+	}
+
+	storedHash := parts[0]
+	saltEncoded := parts[1]
+
+	salt, err := base64.StdEncoding.DecodeString(saltEncoded)
+
+	if err != nil {
+		return false
+	}
+
+	inputHash := u.hashPassword(inputPassword, salt)
+
+	if subtle.ConstantTimeCompare([]byte(inputHash), []byte(storedHash)) == 1 {
+		return true
+	}
+
+	return false
 }

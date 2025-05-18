@@ -68,7 +68,8 @@ func main() {
 	api.Route("GET /health", healthController(api))
 
 	// USER
-	api.Route("POST /users", userController(api, database))
+	api.Route("POST /users", createUserController(api, database))
+	api.Route("POST /users/login", loginUserController(api, database))
 
 	// INTEGRATIONS
 	api.Route("GET /integrations/gmail/oauth", authMiddlewareChain.ApplyOn(googleIntegrationController(api, database)))
@@ -82,7 +83,17 @@ func healthController(api *server.PingrateApiServer) http.HandlerFunc {
 	return api.NewHandler(controller.Handler)
 }
 
-func userController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+func loginUserController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+	userRepository := repository.NewPgUserRepository(database)
+
+	service := user.NewLoginUserService(userRepository)
+
+	controller := user.NewLoginUserController(service)
+
+	return api.NewHandler(controller.Handler)
+}
+
+func createUserController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
 	userRepository := repository.NewPgUserRepository(database)
 
 	service := user.NewCreateUserService(userRepository)
@@ -91,6 +102,7 @@ func userController(api *server.PingrateApiServer, database *sql.DB) http.Handle
 
 	return api.NewHandler(controller.Handler)
 }
+
 func googleIntegrationController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
 	userRepository := repository.NewPgUserRepository(database)
 
