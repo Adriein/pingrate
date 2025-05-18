@@ -1,7 +1,7 @@
 package types
 
 type GoogleToken struct {
-	BusinessId   string
+	UserEmail    string
 	AccessToken  string
 	TokenType    string
 	RefreshToken string

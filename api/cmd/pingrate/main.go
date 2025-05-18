@@ -72,7 +72,7 @@ func main() {
 	api.Route("POST /users/login", loginUserController(api, database))
 
 	// INTEGRATIONS
-	api.Route("GET /integrations/gmail/oauth", authMiddlewareChain.ApplyOn(googleIntegrationController(api, database)))
+	api.Route("GET /integrations/gmail/oauth", authMiddlewareChain.ApplyOn(googleIntegrationController(api)))
 	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(api, database))
 
 	api.Start()
@@ -104,10 +104,8 @@ func createUserController(api *server.PingrateApiServer, database *sql.DB) http.
 	return api.NewHandler(controller.Handler)
 }
 
-func googleIntegrationController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
-	userRepository := repository.NewPgUserRepository(database)
-
-	service := gmail.NewGoogleOauthService(userRepository, external.NewGoogleApi())
+func googleIntegrationController(api *server.PingrateApiServer) http.HandlerFunc {
+	service := gmail.NewGoogleOauthService(external.NewGoogleApi())
 
 	controller := gmail.NewGoogleOauthController(service)
 

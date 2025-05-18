@@ -2,7 +2,6 @@ package gmail
 
 import (
 	"github.com/adriein/pingrate/internal/shared/external"
-	"github.com/adriein/pingrate/internal/shared/repository"
 )
 
 type GoogleOauthService struct {
@@ -10,7 +9,6 @@ type GoogleOauthService struct {
 }
 
 func NewGoogleOauthService(
-	repository repository.UserRepository,
 	googleApi *external.GoogleApi,
 ) *GoogleOauthService {
 	return &GoogleOauthService{

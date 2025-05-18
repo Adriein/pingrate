@@ -29,10 +29,10 @@ func (g *GoogleApi) GetOauth2Config() *oauth2.Config {
 	}
 }
 
-func (g *GoogleApi) GetAuthCodeUrlForUser(userId string) string {
+func (g *GoogleApi) GetAuthCodeUrlForUser(userEmail string) string {
 	config := g.GetOauth2Config()
 
-	return config.AuthCodeURL(userId, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(userId))
+	return config.AuthCodeURL(userEmail, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(userEmail))
 }
 
 func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken, error) {
@@ -45,8 +45,8 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken
 		return nil, eris.New(exchangeErr.Error())
 	}
 
-	googleToken := types.GoogleToken{
-		BusinessId:   state,
+	googleToken := &types.GoogleToken{
+		UserEmail:    state,
 		AccessToken:  token.AccessToken,
 		TokenType:    token.TokenType,
 		RefreshToken: token.RefreshToken,
@@ -54,10 +54,10 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken
 		UpdatedAt:    time.Now().UTC().Format(time.DateTime),
 	}
 
-	return &googleToken, nil
+	return googleToken, nil
 }
 
-func (g *GoogleApi) GmailClient(userToken types.GoogleToken) (*gmail.Service, error) {
+func (g *GoogleApi) GmailClient(userToken *types.GoogleToken) (*gmail.Service, error) {
 	ctx := context.Background()
 
 	config := g.GetOauth2Config()
