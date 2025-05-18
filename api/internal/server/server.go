@@ -57,40 +57,12 @@ func (s *PingrateApiServer) Route(url string, handler http.Handler) {
 func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := handler(w, r); err != nil {
-			response, httpCode, serverResponseErr := s.newErrorServerResponse(err)
-
-			if serverResponseErr != nil {
-				res := types.ServerResponse{
-					Ok:    false,
-					Error: constants.ServerGenericError,
-				}
-
-				encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, res)
-
-				if encodeErr != nil {
-					log.Fatal(eris.ToString(encodeErr, true))
-				}
-
-				slog.Error(fmt.Sprintf(
-					"%s TraceId=%s",
-					eris.ToString(err, true),
-					r.Header.Get("traceId"),
-				))
-
-				return
+			response := types.ServerResponse{
+				Ok:    false,
+				Error: constants.ServerGenericError,
 			}
 
-			if response.Error != constants.ServerGenericError {
-				encodeErr := helper.Encode[types.ServerResponse](w, httpCode, *response)
-
-				if encodeErr != nil {
-					log.Fatal(eris.ToString(encodeErr, true))
-				}
-
-				return
-			}
-
-			encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, *response)
+			encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, response)
 
 			if encodeErr != nil {
 				log.Fatal(eris.ToString(encodeErr, true))
@@ -99,11 +71,4 @@ func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.H
 			slog.Error(fmt.Sprintf("%s TraceId=%s", eris.ToString(err, true), r.Header.Get("traceId")))
 		}
 	}
-}
-
-func (s *PingrateApiServer) newErrorServerResponse(err error) (*types.ServerResponse, int, error) {
-	return &types.ServerResponse{
-		Ok:    false,
-		Error: constants.ServerGenericError,
-	}, 500, nil
 }

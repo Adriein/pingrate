@@ -3,6 +3,8 @@ package middleware
 import (
 	"context"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/types"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"os"
@@ -15,7 +17,15 @@ func NewAuthMiddleWare(handler http.Handler) http.Handler {
 		cookie, cookieErr := r.Cookie("jwt")
 
 		if cookieErr != nil {
-			http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+			response := types.ServerResponse{
+				Ok:    false,
+				Error: constants.MissingJwt,
+			}
+
+			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
+				http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
+			}
+
 			return
 		}
 
@@ -26,14 +36,30 @@ func NewAuthMiddleWare(handler http.Handler) http.Handler {
 		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 		if err != nil || !token.Valid {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			response := types.ServerResponse{
+				Ok:    false,
+				Error: constants.InvalidJwt,
+			}
+
+			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
+				http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
+			}
+
 			return
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			userEmail, okEmail := claims["user"].(string)
 			if !okEmail {
-				http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+				response := types.ServerResponse{
+					Ok:    false,
+					Error: constants.InvalidStructureJwt,
+				}
+
+				if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
+					http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
+				}
+
 				return
 			}
 
@@ -44,7 +70,14 @@ func NewAuthMiddleWare(handler http.Handler) http.Handler {
 			return
 		}
 
-		http.Error(w, "Invalid token structure", http.StatusUnauthorized)
+		response := types.ServerResponse{
+			Ok:    false,
+			Error: constants.InvalidStructureJwt,
+		}
+
+		if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
+			http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
+		}
 
 		handler.ServeHTTP(w, r)
 	})

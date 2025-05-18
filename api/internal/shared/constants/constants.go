@@ -26,6 +26,9 @@ const (
 // Errors
 
 const (
-	ServerGenericError = "SERVER_ERROR"
-	ValidationError    = "VALIDATION_ERROR"
+	ServerGenericError  = "SERVER_ERROR"
+	ValidationError     = "VALIDATION_ERROR"
+	MissingJwt          = "MISSING_JWT"
+	InvalidJwt          = "INVALID_JWT"
+	InvalidStructureJwt = "INVALID_STRUCTURE_JWT"
 )
