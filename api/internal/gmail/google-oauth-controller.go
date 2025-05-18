@@ -9,11 +9,11 @@ import (
 )
 
 type GoogleOauthController struct {
-	service *GoogleOauthCallbackService
+	service *GoogleOauthService
 }
 
-func NewGoogleAuthController(
-	service *GoogleOauthCallbackService,
+func NewGoogleOauthController(
+	service *GoogleOauthService,
 ) *GoogleOauthController {
 	return &GoogleOauthController{
 		service: service,

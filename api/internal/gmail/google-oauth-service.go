@@ -5,19 +5,19 @@ import (
 	"github.com/adriein/pingrate/internal/shared/repository"
 )
 
-type GoogleOauthCallbackService struct {
+type GoogleOauthService struct {
 	googleApi *external.GoogleApi
 }
 
-func NewGoogleOauthCallbackService(
+func NewGoogleOauthService(
 	repository repository.UserRepository,
 	googleApi *external.GoogleApi,
-) *GoogleOauthCallbackService {
-	return &GoogleOauthCallbackService{
+) *GoogleOauthService {
+	return &GoogleOauthService{
 		googleApi: googleApi,
 	}
 }
 
-func (s *GoogleOauthCallbackService) Execute(userEmail string) string {
+func (s *GoogleOauthService) Execute(userEmail string) string {
 	return s.googleApi.GetAuthCodeUrlForUser(userEmail)
 }
