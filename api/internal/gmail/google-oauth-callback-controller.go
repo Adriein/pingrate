@@ -30,7 +30,9 @@ func (c *GoogleOauthCallbackController) Handler(w http.ResponseWriter, r *http.R
 	state := parsedUrl.Query().Get("state")
 	code := parsedUrl.Query().Get("code")
 
-	c.service.Execute(state, code)
+	if err := c.service.Execute(state, code); err != nil {
+		return err
+	}
 
 	response := types.ServerResponse{
 		Ok: true,
