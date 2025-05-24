@@ -35,16 +35,13 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
 
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
-            console.log('1')
             return new PingrateApiResponse<T>(
                 false,
                 body,
             );
         }
-        console.log('2')
         return new PingrateApiResponse<T>(true, body);
     } catch (error: unknown) {
-        console.log(error)
         return new PingrateApiResponse<T>(
             false,
             undefined,
