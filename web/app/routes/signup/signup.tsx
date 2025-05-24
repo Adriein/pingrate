@@ -83,7 +83,7 @@ export async function action({request}: Route.ActionArgs){
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
-    return redirect("/");
+    return redirect("/dashboard");
 }
 
 export default function Signup({loaderData}: Route.ComponentProps) {

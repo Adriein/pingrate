@@ -31,7 +31,7 @@ import {
 import { IconAt, IconLock } from "@tabler/icons-react";
 
 import PingrateLogo from "@app/shared/img/pingrate-logo.png";
-import {signup, type SignupResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
+import {signin, type SigninResponse, signup, type SignupResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
 import classes from "./signin.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
 import type {i18n} from "i18next";
@@ -65,8 +65,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({request}: Route.ActionArgs){
     const formData: FormData = await request.formData();
 
-    const response: PingrateApiResponse<SignupResponse> = await signup({
-        id: uuidv4(),
+    const response: PingrateApiResponse<SigninResponse> = await signin({
         email: formData.get('email') as string,
         password: formData.get('password') as string
     });

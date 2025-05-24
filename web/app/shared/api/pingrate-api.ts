@@ -12,6 +12,14 @@ export const signup = async (payload: SignupForm): Promise<PingrateApiResponse<S
     return await post<SignupResponse>("/users", payload);
 };
 
+//SIGNIN
+export type SigninForm = { email: string, password: string};
+export type SigninResponse = { ok: boolean, data: Record<string, string> | undefined, error: string | undefined }
+
+export const signin = async (payload: SigninForm): Promise<PingrateApiResponse<SigninResponse>> => {
+    return await post<SignupResponse>("/users/login", payload);
+};
+
 
 //SHARED
 const post = async <T>(resource: string, payload: Record<string, any>): Promise<PingrateApiResponse<T>> => {
