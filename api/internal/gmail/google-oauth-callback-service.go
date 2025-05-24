@@ -13,12 +13,14 @@ type GoogleOauthCallbackService struct {
 }
 
 func NewGoogleOauthCallbackService(
-	repository repository.UserRepository,
+	userRepository repository.UserRepository,
 	googleRepository repository.GoogleIntegrationRepository,
 	googleApi *external.GoogleApi,
 ) *GoogleOauthCallbackService {
 	return &GoogleOauthCallbackService{
-		googleApi: googleApi,
+		userRepository:   userRepository,
+		googleRepository: googleRepository,
+		googleApi:        googleApi,
 	}
 }
 

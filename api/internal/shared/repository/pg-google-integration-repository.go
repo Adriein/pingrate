@@ -126,7 +126,7 @@ func (r *PgGoogleIntegrationRepository) Save(entity *types.GoogleToken) error {
 
 	query.WriteString(`INSERT INTO pi_google_integration `)
 	query.WriteString(`(gi_id, gi_user_email, gi_google_access_token, gi_google_token_type, gi_google_refresh_token, gi_created_at, gi_updated_at) `)
-	query.WriteString(`VALUES ($1, $2, $3, $4, $5);`)
+	query.WriteString(`VALUES ($1, $2, $3, $4, $5, $6, $7);`)
 
 	_, err := r.connection.Exec(
 		query.String(),
