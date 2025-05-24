@@ -48,18 +48,20 @@ export default function Home({loaderData}: Route.ComponentProps) {
                         >Pingrate</Title>
                     </div>
                     <div className={classes.headerButtons}>
-                        <Button
-                            variant="default"
-                            vars={(theme: MantineTheme) => ({
-                                root: {
-                                    '--button-bg': theme.colors.pingrateBackground[10],
-                                    '--button-hover': theme.colors.pingrateSecondary[0],
-                                    '--button-color': theme.colors.pingrateSecondary[10],
-                                },
-                            })}
-                        >
-                            Sign In
-                        </Button>
+                        <Link to="/signin">
+                            <Button
+                                variant="default"
+                                vars={(theme: MantineTheme) => ({
+                                    root: {
+                                        '--button-bg': theme.colors.pingrateBackground[10],
+                                        '--button-hover': theme.colors.pingrateSecondary[0],
+                                        '--button-color': theme.colors.pingrateSecondary[10],
+                                    },
+                                })}
+                            >
+                                Sign In
+                            </Button>
+                        </Link>
                         <Link to="/signup">
                             <Button
                                 variant="filled"

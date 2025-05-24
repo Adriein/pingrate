@@ -10,5 +10,11 @@ export default {
         termsAndPrivacyLink: "Condiciones de privacidad",
         loginShortcut: "Ya tienes una cuenta?",
         loginShortcutLink: "Entrar",
+    },
+    signin: {
+        title: "Entrar a Pingrate",
+        button: "Entrar",
+        signupShortcut: "No tienes una cuenta?",
+        signupShortcutLink: "Regístrate",
     }
 };

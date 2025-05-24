@@ -10,5 +10,11 @@ export default {
         termsAndPrivacyLink: "Terms & Privacy",
         loginShortcut: "Do you have an account?",
         loginShortcutLink: "Sign in",
+    },
+    signin: {
+        title: "Enter Pingrate",
+        button: "Login",
+        signupShortcut: "You don't have an account?",
+        signupShortcutLink: "Signup",
     }
 };
