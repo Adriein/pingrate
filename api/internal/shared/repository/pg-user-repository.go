@@ -71,11 +71,11 @@ func (r *PgUserRepository) Find(criteria types.Criteria) ([]types.User, error) {
 	return results, nil
 }
 
-func (r *PgUserRepository) FindOne(criteria types.Criteria) (types.User, error) {
+func (r *PgUserRepository) FindOne(criteria types.Criteria) (*types.User, error) {
 	query, err := r.transformer.Transform(criteria)
 
 	if err != nil {
-		return types.User{}, eris.New(err.Error())
+		return nil, eris.New(err.Error())
 	}
 
 	var (
@@ -94,13 +94,13 @@ func (r *PgUserRepository) FindOne(criteria types.Criteria) (types.User, error) 
 		&us_updated_at,
 	); scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {
-			return types.User{}, eris.Wrap(types.UserNotFoundError, "")
+			return nil, eris.Wrap(types.UserNotFoundError, "")
 		}
 
-		return types.User{}, eris.New(scanErr.Error())
+		return nil, eris.New(scanErr.Error())
 	}
 
-	return types.User{
+	return &types.User{
 		Id:        us_id,
 		Email:     us_email,
 		Password:  us_password,

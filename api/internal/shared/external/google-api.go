@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/rotisserie/eris"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -46,6 +47,7 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken
 	}
 
 	googleToken := &types.GoogleToken{
+		Id:           uuid.New().String(),
 		UserEmail:    state,
 		AccessToken:  token.AccessToken,
 		TokenType:    token.TokenType,

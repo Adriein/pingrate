@@ -3,7 +3,9 @@ package gmail
 import (
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/rotisserie/eris"
 	"net/http"
+	"net/url"
 )
 
 type GoogleOauthCallbackController struct {
@@ -18,7 +20,18 @@ func NewGoogleOauthCallbackController(
 	}
 }
 
-func (h *GoogleOauthCallbackController) Handler(w http.ResponseWriter, r *http.Request) error {
+func (c *GoogleOauthCallbackController) Handler(w http.ResponseWriter, r *http.Request) error {
+	parsedUrl, parseUrlErr := url.Parse(r.RequestURI)
+
+	if parseUrlErr != nil {
+		return eris.New(parseUrlErr.Error())
+	}
+
+	state := parsedUrl.Query().Get("state")
+	code := parsedUrl.Query().Get("code")
+
+	c.service.Execute(state, code)
+
 	response := types.ServerResponse{
 		Ok: true,
 	}

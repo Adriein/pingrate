@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS pi_google_integration;
