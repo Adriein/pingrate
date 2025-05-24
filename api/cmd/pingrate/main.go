@@ -113,8 +113,10 @@ func googleIntegrationController(api *server.PingrateApiServer) http.HandlerFunc
 }
 
 func googleOauthCallbackController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+	userRepository := repository.NewPgUserRepository(database)
+	googleIntegrationRepository := repository.NewPgGoogleIntegrationRepository(database)
 
-	service := gmail.NewGoogleOauthCallbackService(external.NewGoogleApi())
+	service := gmail.NewGoogleOauthCallbackService(userRepository, googleIntegrationRepository, external.NewGoogleApi())
 
 	controller := gmail.NewGoogleOauthCallbackController(service)
 
