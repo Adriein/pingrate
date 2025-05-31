@@ -20,8 +20,42 @@ export const signin = async (payload: SigninForm): Promise<PingrateApiResponse<S
     return await post<SignupResponse>("/users/login", payload);
 };
 
+//AUTH
+export type WhoAmIResponse = {};
+
+export const whoAmI = async () => {
+    return await get("");
+}
+
 
 //SHARED
+const get = async <T>(resource: string): Promise<PingrateApiResponse<T>> => {
+    try {
+        const request: Request = new Request(`${PINGRATE_API_V1_URL}${resource}`, {
+            method: "GET",
+        });
+
+        const response: Response = await fetch(request);
+
+        const body = await response.json();
+
+        // response.ok only checks if the server responded with 2XX
+        if (!response.ok) {
+            return new PingrateApiResponse<T>(
+                false,
+                body,
+            );
+        }
+        return new PingrateApiResponse<T>(true, body);
+    } catch (error: unknown) {
+        return new PingrateApiResponse<T>(
+            false,
+            undefined,
+            error as Error
+        );
+    }
+}
+
 const post = async <T>(resource: string, payload: Record<string, any>): Promise<PingrateApiResponse<T>> => {
     try {
         const request: Request = new Request(`${PINGRATE_API_V1_URL}${resource}`, {
@@ -48,5 +82,4 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
             error as Error
         );
     }
-
 }

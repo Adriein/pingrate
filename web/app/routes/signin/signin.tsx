@@ -40,7 +40,7 @@ import {getInstance} from "@app/middleware/i18next";
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Pingrate" },
-        { name: "description", content: "Signup page for Pingrate" },
+        { name: "description", content: "Signin page for Pingrate" },
     ];
 }
 
