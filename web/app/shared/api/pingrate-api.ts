@@ -59,11 +59,17 @@ const get = async <T>(resource: string): Promise<PingrateApiResponse<T>> => {
 const post = async <T>(resource: string, payload: Record<string, any>): Promise<PingrateApiResponse<T>> => {
     try {
         const request: Request = new Request(`${PINGRATE_API_V1_URL}${resource}`, {
+            headers: {
+                "Content-Application": "application/json"
+            },
             method: "POST",
             body: JSON.stringify(payload),
+            credentials: 'include'
         });
 
         const response: Response = await fetch(request);
+
+        console.log(response)
 
         const body = await response.json();
 

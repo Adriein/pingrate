@@ -70,6 +70,7 @@ func main() {
 	// USER
 	api.Route("POST /users", createUserController(api, database))
 	api.Route("POST /users/login", loginUserController(api, database))
+	api.Route("GET /users/whoami", whoAmIController(api, database))
 
 	// INTEGRATIONS
 	api.Route("GET /integrations/gmail/oauth", authMiddlewareChain.ApplyOn(googleIntegrationController(api)))
@@ -90,6 +91,16 @@ func loginUserController(api *server.PingrateApiServer, database *sql.DB) http.H
 	service := user.NewLoginUserService(userRepository)
 
 	controller := user.NewLoginUserController(service)
+
+	return api.NewHandler(controller.Handler)
+}
+
+func whoAmIController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+	userRepository := repository.NewPgUserRepository(database)
+
+	service := user.NewWhoAmIService(userRepository)
+
+	controller := user.NewWhoAmIController(service)
 
 	return api.NewHandler(controller.Handler)
 }
