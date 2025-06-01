@@ -6,6 +6,7 @@ import (
 	"github.com/adriein/pingrate/internal/gmail"
 	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/server"
+	"github.com/adriein/pingrate/internal/session"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/external"
 	"github.com/adriein/pingrate/internal/shared/helper"
@@ -67,10 +68,12 @@ func main() {
 
 	api.Route("GET /health", healthController(api))
 
+	// SESSION
+	api.Route("POST /sessions", createSessionController(api, database))
+
 	// USER
 	api.Route("POST /users", createUserController(api, database))
 	api.Route("POST /users/login", loginUserController(api, database))
-	api.Route("GET /users/whoami", whoAmIController(api, database))
 
 	// INTEGRATIONS
 	api.Route("GET /integrations/gmail/oauth", authMiddlewareChain.ApplyOn(googleIntegrationController(api)))
@@ -85,22 +88,20 @@ func healthController(api *server.PingrateApiServer) http.HandlerFunc {
 	return api.NewHandler(controller.Handler)
 }
 
+func createSessionController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+	service := session.NewCreateSessionService()
+
+	controller := session.NewCreateUserController(service)
+
+	return api.NewHandler(controller.Handler)
+}
+
 func loginUserController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
 	userRepository := repository.NewPgUserRepository(database)
 
 	service := user.NewLoginUserService(userRepository)
 
 	controller := user.NewLoginUserController(service)
-
-	return api.NewHandler(controller.Handler)
-}
-
-func whoAmIController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
-	userRepository := repository.NewPgUserRepository(database)
-
-	service := user.NewWhoAmIService(userRepository)
-
-	controller := user.NewWhoAmIController(service)
 
 	return api.NewHandler(controller.Handler)
 }

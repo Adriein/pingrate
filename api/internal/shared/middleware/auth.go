@@ -14,7 +14,7 @@ const UserContextKey = "user"
 
 func NewAuthMiddleWare(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, cookieErr := r.Cookie("jwt")
+		cookie, cookieErr := r.Cookie("$session")
 
 		if cookieErr != nil {
 			response := types.ServerResponse{

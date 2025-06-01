@@ -1,4 +1,4 @@
-package user
+package session
 
 import (
 	"encoding/json"
@@ -6,21 +6,20 @@ import (
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/types"
-	"github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	"github.com/rotisserie/eris"
 	"net/http"
+	"time"
 )
 
-type LoginUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type CreateSessionRequest struct {
+	Email string `json:"email"`
 }
 
-func (lur *LoginUserRequest) Validate() error {
-	err := validation.ValidateStruct(lur,
-		validation.Field(&lur.Email, validation.Required, is.Email),
-		validation.Field(&lur.Password, validation.Required, validation.Length(8, 50)),
+func (r *CreateSessionRequest) Validate() error {
+	err := validation.ValidateStruct(r,
+		validation.Field(&r.Email, validation.Required, is.Email),
 	)
 
 	if err != nil {
@@ -36,18 +35,18 @@ func (lur *LoginUserRequest) Validate() error {
 	return nil
 }
 
-type LoginUserController struct {
-	service *LoginUserService
+type CreateSessionController struct {
+	service *CreateSessionService
 }
 
-func NewLoginUserController(service *LoginUserService) *LoginUserController {
-	return &LoginUserController{
+func NewCreateUserController(service *CreateSessionService) *CreateSessionController {
+	return &CreateSessionController{
 		service: service,
 	}
 }
 
-func (c *LoginUserController) Handler(w http.ResponseWriter, r *http.Request) error {
-	var request LoginUserRequest
+func (c *CreateSessionController) Handler(w http.ResponseWriter, r *http.Request) error {
+	var request CreateSessionRequest
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&request); decodeErr != nil {
 		return eris.New(decodeErr.Error())
@@ -83,25 +82,21 @@ func (c *LoginUserController) Handler(w http.ResponseWriter, r *http.Request) er
 		}
 	}
 
-	if serviceErr := c.service.Execute(request.Email, request.Password); serviceErr != nil {
-		if errors.Is(serviceErr, types.UserNotFoundError) || errors.Is(serviceErr, types.UserIncorrectPasswordError) {
-			response := types.ServerResponse{
-				Ok: true,
-			}
+	sessionId, _ := c.service.Execute()
 
-			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
-				return encodeErr
-			}
-
-			return nil
-		}
-
-		return serviceErr
-	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "$session",
+		Value:    sessionId,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   false, // Set to true in production (requires HTTPS)
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	response := types.ServerResponse{Ok: true}
 
-	if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusOK, response); encodeErr != nil {
+	if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusCreated, response); encodeErr != nil {
 		return encodeErr
 	}
 

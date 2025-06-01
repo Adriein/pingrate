@@ -64,12 +64,9 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
             },
             method: "POST",
             body: JSON.stringify(payload),
-            credentials: 'include'
         });
 
         const response: Response = await fetch(request);
-
-        console.log(response)
 
         const body = await response.json();
 
