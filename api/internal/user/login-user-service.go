@@ -3,32 +3,50 @@ package user
 import (
 	"github.com/adriein/pingrate/internal/shared/repository"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/google/uuid"
+	"time"
 )
 
 type LoginUserService struct {
-	repository repository.UserRepository
+	userRepository    repository.UserRepository
+	sessionRepository repository.SessionRepository
 }
 
-func NewLoginUserService(repository repository.UserRepository) *LoginUserService {
+func NewLoginUserService(
+	userRepository repository.UserRepository,
+	sessionRepository repository.SessionRepository,
+) *LoginUserService {
 	return &LoginUserService{
-		repository: repository,
+		userRepository:    userRepository,
+		sessionRepository: sessionRepository,
 	}
 }
 
-func (s *LoginUserService) Execute(email string, inputPassword string) error {
+func (s *LoginUserService) Execute(email string, inputPassword string) (*types.Session, error) {
 	criteria := types.NewCriteria().Equal("us_email", email)
 
-	user, findOneErr := s.repository.FindOne(criteria)
+	user, findOneErr := s.userRepository.FindOne(criteria)
 
 	if findOneErr != nil {
-		return findOneErr
+		return nil, findOneErr
 	}
 
 	isCorrect := user.CheckPassword(inputPassword)
 
 	if !isCorrect {
-		return types.UserIncorrectPasswordError
+		return nil, types.UserIncorrectPasswordError
 	}
 
-	return nil
+	session := &types.Session{
+		Id:        uuid.New().String(),
+		Email:     user.Email,
+		CreatedAt: time.Now().UTC().Format(time.DateTime),
+		UpdatedAt: time.Now().UTC().Format(time.DateTime),
+	}
+
+	if sessionErr := s.sessionRepository.Save(session); sessionErr != nil {
+		return nil, sessionErr
+	}
+
+	return session, nil
 }

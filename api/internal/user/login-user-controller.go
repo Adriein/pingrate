@@ -10,6 +10,7 @@ import (
 	"github.com/go-ozzo/ozzo-validation/is"
 	"github.com/rotisserie/eris"
 	"net/http"
+	"time"
 )
 
 type LoginUserRequest struct {
@@ -83,7 +84,9 @@ func (c *LoginUserController) Handler(w http.ResponseWriter, r *http.Request) er
 		}
 	}
 
-	if serviceErr := c.service.Execute(request.Email, request.Password); serviceErr != nil {
+	session, serviceErr := c.service.Execute(request.Email, request.Password)
+
+	if serviceErr != nil {
 		if errors.Is(serviceErr, types.UserNotFoundError) || errors.Is(serviceErr, types.UserIncorrectPasswordError) {
 			response := types.ServerResponse{
 				Ok: true,
@@ -98,6 +101,16 @@ func (c *LoginUserController) Handler(w http.ResponseWriter, r *http.Request) er
 
 		return serviceErr
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "$session",
+		Value:    session.Id,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   false, // Set to true in production (requires HTTPS)
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	response := types.ServerResponse{Ok: true}
 
