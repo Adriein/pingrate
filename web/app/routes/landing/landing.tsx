@@ -9,6 +9,8 @@ import classes from "./landing.module.css";
 
 import type { Route } from "./+types/landing";
 import {Link} from "react-router";
+import {type LandingTranslations, translate} from "@app/locale.server";
+import {ES} from "@app/shared/constants";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -17,7 +19,8 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 export async function loader({ context }: Route.LoaderArgs) {
-    return { lang: {} }
+    const translations: LandingTranslations = translate(ES, "landing");
+    return { lang: {...translations} }
 }
 
 
@@ -52,7 +55,7 @@ export default function Home({loaderData}: Route.ComponentProps) {
                                     },
                                 })}
                             >
-                                Sign In
+                                {lang.loginButton}
                             </Button>
                         </Link>
                         <Link to="/signup">
@@ -66,7 +69,7 @@ export default function Home({loaderData}: Route.ComponentProps) {
                                     },
                                 })}
                             >
-                                {lang.signup}
+                                {lang.signupButton}
                             </Button>
                         </Link>
                     </div>

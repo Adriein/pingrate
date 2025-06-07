@@ -32,6 +32,8 @@ import {PingrateApiResponse, signin, type SigninResponse, VALIDATION_ERROR} from
 import classes from "./signin.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
 import {sessionCookie} from "@app/cookies.server";
+import {type SigninTranslations, translate} from "@app/locale.server";
+import {ES} from "@app/shared/constants";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -41,12 +43,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-    const cookie: Cookie|null = await sessionCookie.parse(request.headers.get('cookie'));
+    const cookie: Cookie|null = await sessionCookie.parse(request.headers.get('set-cookie'));
 
-    console.log(cookie)
+    console.log(cookie);
+
+    const translations: SigninTranslations = translate(ES, "signin");
 
     return {
-        lang: {}
+        lang: {...translations}
     }
 }
 
@@ -68,7 +72,7 @@ export async function action({request}: Route.ActionArgs){
 
     console.log(response)
 
-    return null;
+    return {};
 
     /*return redirect("/dashboard", {
         headers: {
@@ -195,7 +199,7 @@ export default function Signin({loaderData}: Route.ComponentProps) {
                             },
                         })}
                     >
-                        {lang.signupButton}
+                        {lang.button}
                     </Button>
                 </fetcher.Form>
                 <div className={classes.formLink}>
