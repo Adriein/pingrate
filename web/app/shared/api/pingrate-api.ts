@@ -1,6 +1,24 @@
-import {PingrateApiResponse} from "@app/shared/api/PingrateApiResponse";
-
 const PINGRATE_API_V1_URL: string = "http://localhost:4000/api/v1"
+
+export class PingrateApiResponse<T = undefined> {
+    public constructor(
+        private _ok: boolean,
+        private _data?: T,
+        private _error?: Error,
+    ) {}
+
+    public get ok(): boolean {
+        return this._ok;
+    }
+
+    public get data(): T | undefined {
+        return this._data;
+    }
+
+    public get error(): Error | undefined {
+        return this._error;
+    }
+}
 
 //SIGNUP
 export type SignupForm = { id: string, email: string, password: string};
