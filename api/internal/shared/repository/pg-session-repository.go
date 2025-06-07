@@ -108,7 +108,7 @@ func (r *PgSessionRepository) Save(entity *types.Session) error {
 
 	query.WriteString(`INSERT INTO pi_session `)
 	query.WriteString(`(se_id, se_email, se_created_at, se_updated_at) `)
-	query.WriteString(`VALUES ($1, $2, $3, $4, $5);`)
+	query.WriteString(`VALUES ($1, $2, $3, $4);`)
 
 	_, err := r.connection.Exec(
 		query.String(),

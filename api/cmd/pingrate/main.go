@@ -98,8 +98,9 @@ func createSessionController(api *server.PingrateApiServer, database *sql.DB) ht
 
 func loginUserController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
 	userRepository := repository.NewPgUserRepository(database)
+	sessionRepository := repository.NewPgSessionRepository(database)
 
-	service := user.NewLoginUserService(userRepository)
+	service := user.NewLoginUserService(userRepository, sessionRepository)
 
 	controller := user.NewLoginUserController(service)
 
