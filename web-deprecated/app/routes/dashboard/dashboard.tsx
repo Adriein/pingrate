@@ -1,7 +1,6 @@
 import type {Route} from "~/.react-router/types/app/routes/landing/+types/landing";
 import Integration from "@app/routes/dashboard/integration/integration";
-import {Outlet} from "react-router";
-import {whoAmI} from "@app/shared/api/pingrate-api";
+import {Outlet, type Session} from "react-router";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -10,8 +9,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
-    await whoAmI();
+export async function loader({ request }: Route.LoaderArgs) {
     return {};
 }
 

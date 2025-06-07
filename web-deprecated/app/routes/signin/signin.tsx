@@ -1,8 +1,7 @@
 import React from "react";
-import {data, Link, redirect, useFetcher} from "react-router";
-import { v4 as uuidv4 } from 'uuid';
+import {type Cookie, data, Link, redirect, useFetcher} from "react-router";
 
-import type { Route } from "./+types/signup";
+import type { Route } from "./+types/signin";
 import type { PingrateApiResponse } from "@app/shared/api/PingrateApiResponse";
 import type { MantineTheme } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
@@ -14,7 +13,6 @@ import {
     Anchor,
     Avatar,
     Button,
-    Checkbox,
     Input,
     PasswordInput,
     Text,
@@ -31,37 +29,38 @@ import {
 import { IconAt, IconLock } from "@tabler/icons-react";
 
 import PingrateLogo from "@app/shared/img/pingrate-logo.png";
-import {signup, type SignupResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
-import classes from "./signup.module.css";
+import {signin, type SigninResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
+import classes from "./signin.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
 import type {i18n} from "i18next";
 import {getInstance} from "@app/middleware/i18next";
+import {sessionCookie} from "@app/cookies.server";
 
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Pingrate" },
-        { name: "description", content: "Signup page for Pingrate" },
+        { name: "description", content: "Signin page for Pingrate" },
     ];
 }
 
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
+    const cookie: Cookie|null = await sessionCookie.parse(request.headers.get('cookie'));
+
+    console.log(cookie)
+
     const i18next: i18n = getInstance(context);
 
-    const title: string = i18next.t("signup.title");
-    const signupButton: string = i18next.t("signup.button");
-    const termsAndPrivacy: string = i18next.t("signup.termsAndPrivacy");
-    const termsAndPrivacyLink: string = i18next.t("signup.termsAndPrivacyLink");
-    const loginShortcut: string = i18next.t("signup.loginShortcut");
-    const loginShortcutLink: string = i18next.t("signup.loginShortcutLink");
+    const title: string = i18next.t("signin.title");
+    const signupButton: string = i18next.t("signin.button");
+    const signupShortcut: string = i18next.t("signin.signupShortcut");
+    const signupShortcutLink: string = i18next.t("signin.signupShortcutLink");
 
     return {
         lang: {
             title,
             signupButton,
-            termsAndPrivacy,
-            termsAndPrivacyLink,
-            loginShortcut,
-            loginShortcutLink
+            signupShortcut,
+            signupShortcutLink,
         }
     }
 }
@@ -69,8 +68,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({request}: Route.ActionArgs){
     const formData: FormData = await request.formData();
 
-    const response: PingrateApiResponse<SignupResponse> = await signup({
-        id: uuidv4(),
+    const response: PingrateApiResponse<SigninResponse> = await signin({
         email: formData.get('email') as string,
         password: formData.get('password') as string
     });
@@ -83,10 +81,18 @@ export async function action({request}: Route.ActionArgs){
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
-    return redirect("/dashboard");
+    console.log(response.cookieSession)
+
+    return null;
+
+    /*return redirect("/dashboard", {
+        headers: {
+            "Set-Cookie": await sessionCookie.serialize({ sessionId: response.cookieSession }),
+        },
+    });*/
 }
 
-export default function Signup({loaderData}: Route.ComponentProps) {
+export default function Signin({loaderData}: Route.ComponentProps) {
     const { lang } = loaderData;
     const fetcher = useFetcher();
     const theme: MantineTheme = useMantineTheme();
@@ -192,38 +198,6 @@ export default function Signup({loaderData}: Route.ComponentProps) {
                             {...form.getInputProps('password')}
                         />
                     </Input.Wrapper>
-                    <Checkbox
-                        defaultChecked
-                        key={form.key('termsOfService')}
-                        {...form.getInputProps('termsOfService', { type: 'checkbox' })}
-                        label={
-                            <>
-                                {lang.termsAndPrivacy}{' '}
-                                <Anchor
-                                    href="https://mantine.dev"
-                                    target="_blank"
-                                    inherit
-                                    styles={{
-                                        root: {
-                                            color: theme.colors.pingratePrimary[10]
-                                        }
-                                    }}
-                                >
-                                    {lang.termsAndPrivacyLink}
-                                </Anchor>
-                            </>
-                        }
-                        vars={(theme: MantineTheme) => ({
-                            root: {
-                                '--checkbox-color': theme.colors.pingratePrimary[6],
-                            },
-                        })}
-                        styles={{
-                            label: {
-                                color: theme.colors.pingrateSecondary[10]
-                            }
-                        }}
-                    />
                     <Button
                         fullWidth
                         variant="filled"
@@ -240,10 +214,10 @@ export default function Signup({loaderData}: Route.ComponentProps) {
                     </Button>
                 </fetcher.Form>
                 <div className={classes.formLink}>
-                    <Text size="sm" c="dimmed">{lang.loginShortcut}</Text>
+                    <Text size="sm" c="dimmed">{lang.signupShortcut}</Text>
                     <Anchor
                         component={Link}
-                        to="/signin"
+                        to="/signup"
                         size="sm"
                         styles={{
                             root: {
@@ -251,7 +225,7 @@ export default function Signup({loaderData}: Route.ComponentProps) {
                             }
                         }}
                     >
-                        {lang.loginShortcutLink}
+                        {lang.signupShortcutLink}
                     </Anchor>
                 </div>
             </div>
