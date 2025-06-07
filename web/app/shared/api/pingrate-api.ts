@@ -1,9 +1,15 @@
+import {parseCookie, type PingrateCookie} from "@app/cookies-helper";
+
 const PINGRATE_API_V1_URL: string = "http://localhost:4000/api/v1"
 
 export class PingrateApiResponse<T = undefined> {
+    public static error<T>(body?: T, error?: Error) {
+        return new PingrateApiResponse<T>(false, body, [], error);
+    }
     public constructor(
         private _ok: boolean,
         private _data?: T,
+        private _cookies: PingrateCookie[] = [],
         private _error?: Error,
     ) {}
 
@@ -13,6 +19,10 @@ export class PingrateApiResponse<T = undefined> {
 
     public get data(): T | undefined {
         return this._data;
+    }
+
+    public get cookies(): PingrateCookie[] {
+        return this._cookies;
     }
 
     public get error(): Error | undefined {
@@ -59,18 +69,20 @@ const get = async <T>(resource: string): Promise<PingrateApiResponse<T>> => {
 
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
-            return new PingrateApiResponse<T>(
-                false,
-                body,
-            );
+            return PingrateApiResponse.error<T>(body);
         }
+
+        const cookieHeader: string|null = response.headers.get("set-cookie");
+
+        if (cookieHeader) {
+            const cookies: PingrateCookie[] = [parseCookie(cookieHeader)];
+
+            return new PingrateApiResponse<T>(true, body, cookies);
+        }
+
         return new PingrateApiResponse<T>(true, body);
     } catch (error: unknown) {
-        return new PingrateApiResponse<T>(
-            false,
-            undefined,
-            error as Error
-        );
+        return PingrateApiResponse.error<T>(undefined, error as Error);
     }
 }
 
@@ -90,17 +102,19 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
 
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
-            return new PingrateApiResponse<T>(
-                false,
-                body,
-            );
+            return PingrateApiResponse.error<T>(body);
         }
+
+        const cookieHeader: string|null = response.headers.get("set-cookie");
+
+        if (cookieHeader) {
+            const cookies: PingrateCookie[] = [parseCookie(cookieHeader)];
+
+            return new PingrateApiResponse<T>(true, body, cookies);
+        }
+
         return new PingrateApiResponse<T>(true, body);
     } catch (error: unknown) {
-        return new PingrateApiResponse<T>(
-            false,
-            undefined,
-            error as Error
-        );
+        return PingrateApiResponse.error<T>(undefined, error as Error);
     }
 }

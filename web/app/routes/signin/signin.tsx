@@ -31,7 +31,7 @@ import PingrateLogo from "@app/shared/img/pingrate-logo.png";
 import {PingrateApiResponse, signin, type SigninResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
 import classes from "./signin.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
-import {sessionCookie} from "@app/cookies.server";
+import {sessionCookie} from "@app/cookies-helper";
 import {type SigninTranslations, translate} from "@app/locale.server";
 import {ES} from "@app/shared/constants";
 
@@ -70,15 +70,13 @@ export async function action({request}: Route.ActionArgs){
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
-    console.log(response)
+    console.log(response.cookies)
 
-    return {};
-
-    /*return redirect("/dashboard", {
+    return redirect("/dashboard", {
         headers: {
-            "Set-Cookie": await sessionCookie.serialize({ sessionId: response.cookieSession }),
+            "Set-Cookie": await sessionCookie.serialize(),
         },
-    });*/
+    });
 }
 
 export default function Signin({loaderData}: Route.ComponentProps) {
