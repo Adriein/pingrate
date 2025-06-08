@@ -1,5 +1,5 @@
 import React from "react";
-import {data, Link, redirect, type Session, useFetcher} from "react-router";
+import {type Cookie, data, Link, redirect, useFetcher} from "react-router";
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Route } from "./+types/signup";
@@ -40,6 +40,9 @@ import {
 } from "@app/shared/api/pingrate-api";
 import classes from "./signup.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
+import {type SignupTranslations, translate} from "@app/locale.server";
+import {ES} from "@app/shared/constants";
+import {type PingrateCookie, sessionCookie} from "@app/cookies-helper";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -48,9 +51,19 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
+    const { fromSession } = sessionCookie();
+
+    const session: Cookie|null = await fromSession(request.headers.get('cookie'));
+
+    if (session) {
+        return redirect("/dashboard");
+    }
+
+    const translations: SignupTranslations = translate(ES, "signup");
+
     return {
-        lang: {}
+        lang: translations
     }
 }
 
@@ -80,9 +93,17 @@ export async function action({request}: Route.ActionArgs){
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
+    const session: PingrateCookie|undefined = signinResponse.cookies.at(0);
+
+    if (!session) {
+        return data({ error: "Something went wrong" }, { status: 500 });
+    }
+
+    const { fromCookie } = sessionCookie();
+
     return redirect("/dashboard", {
         headers: {
-            "Set-Cookie": "await commitSession(session)",
+            "Set-Cookie": await fromCookie(session),
         },
     });
 }
@@ -237,7 +258,7 @@ export default function Signup({loaderData}: Route.ComponentProps) {
                             },
                         })}
                     >
-                        {lang.signupButton}
+                        {lang.button}
                     </Button>
                 </fetcher.Form>
                 <div className={classes.formLink}>

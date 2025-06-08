@@ -54,7 +54,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const translations: SigninTranslations = translate(ES, "signin");
 
     return {
-        lang: {...translations}
+        lang: translations
     }
 }
 
