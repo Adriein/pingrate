@@ -31,7 +31,7 @@ import PingrateLogo from "@app/shared/img/pingrate-logo.png";
 import {PingrateApiResponse, signin, type SigninResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
 import classes from "./signin.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
-import {sessionCookie} from "@app/cookies-helper";
+import {type PingrateCookie, sessionCookie} from "@app/cookies-helper";
 import {type SigninTranslations, translate} from "@app/locale.server";
 import {ES} from "@app/shared/constants";
 
@@ -42,10 +42,14 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-export async function loader({ context, request }: Route.LoaderArgs) {
-    const cookie: Cookie|null = await sessionCookie.parse(request.headers.get('set-cookie'));
+export async function loader({ request }: Route.LoaderArgs) {
+    const { fromSession } = sessionCookie();
 
-    console.log(cookie);
+    const session: Cookie|null = await fromSession(request.headers.get('cookie'));
+
+    if (session) {
+        return redirect("/dashboard");
+    }
 
     const translations: SigninTranslations = translate(ES, "signin");
 
@@ -70,11 +74,17 @@ export async function action({request}: Route.ActionArgs){
         return data({ error: "Something went wrong" }, { status: 500 });
     }
 
-    console.log(response.cookies)
+    const session: PingrateCookie|undefined = response.cookies.at(0);
+
+    if (!session) {
+        return data({ error: "Something went wrong" }, { status: 500 });
+    }
+
+    const { fromCookie } = sessionCookie();
 
     return redirect("/dashboard", {
         headers: {
-            "Set-Cookie": await sessionCookie.serialize(),
+            "Set-Cookie": await fromCookie(session),
         },
     });
 }

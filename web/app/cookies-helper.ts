@@ -9,7 +9,7 @@ export type PingrateCookie = {
     secure: boolean;
     httpOnly: boolean;
     sameSite: "lax" | "strict" | "none";
-}
+};
 
 /**
  * Parses a cookie string into a PingrateCookie object
@@ -66,9 +66,20 @@ export function parseCookie(cookieString: string): PingrateCookie {
     return cookie;
 }
 
-export const sessionCookie = (pingrateCookie: PingrateCookie): Cookie => {
-    return createCookie(pingrateCookie.name, {
-        httpOnly: pingrateCookie.httpOnly,
-        maxAge: 604_800, // one week
-    });
+export const sessionCookie = () => {
+    const $name: string = "$session";
+
+    const fromCookie: (cookie: PingrateCookie) => Promise<string> = async (cookie: PingrateCookie): Promise<string> => {
+        const { name, value, ...remixCookieFormat } = cookie;
+
+        const remixCookie: Cookie = createCookie($name, remixCookieFormat);
+
+        return await remixCookie.serialize({id: value});
+    }
+
+    const fromSession: (session: string|null) => Promise<Cookie|null> = async (session: string|null): Promise<Cookie|null> => {
+        return await createCookie($name).parse(session);
+    }
+
+    return { fromCookie, fromSession };
 }
