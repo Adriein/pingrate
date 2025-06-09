@@ -20,7 +20,9 @@ func NewGoogleOauthCallbackController(
 	}
 }
 
-func (c *GoogleOauthCallbackController) Handler(w http.ResponseWriter, r *http.Request) error {
+func (c *GoogleOauthCallbackController) Handler(ctx *types.Ctx) error {
+	w, r := ctx.Res, ctx.Req
+
 	parsedUrl, parseUrlErr := url.Parse(r.RequestURI)
 
 	if parseUrlErr != nil {

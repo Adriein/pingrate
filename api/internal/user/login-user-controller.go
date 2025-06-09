@@ -47,7 +47,9 @@ func NewLoginUserController(service *LoginUserService) *LoginUserController {
 	}
 }
 
-func (c *LoginUserController) Handler(w http.ResponseWriter, r *http.Request) error {
+func (c *LoginUserController) Handler(ctx *types.Ctx) error {
+	w, r := ctx.Res, ctx.Req
+
 	var request LoginUserRequest
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&request); decodeErr != nil {

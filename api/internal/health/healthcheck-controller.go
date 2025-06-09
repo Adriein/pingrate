@@ -12,7 +12,9 @@ func NewController() *Controller {
 	return &Controller{}
 }
 
-func (c *Controller) Handler(w http.ResponseWriter, _ *http.Request) error {
+func (c *Controller) Handler(ctx *types.Ctx) error {
+	w := ctx.Res
+
 	response := types.ServerResponse{Ok: true}
 
 	if err := helper.Encode[types.ServerResponse](w, http.StatusOK, response); err != nil {

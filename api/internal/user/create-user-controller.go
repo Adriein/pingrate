@@ -49,7 +49,9 @@ func NewCreateUserController(service *CreateUserService) *CreateUserController {
 	}
 }
 
-func (c *CreateUserController) Handler(w http.ResponseWriter, r *http.Request) error {
+func (c *CreateUserController) Handler(ctx *types.Ctx) error {
+	w, r := ctx.Res, ctx.Req
+
 	var request CreateUserRequest
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&request); decodeErr != nil {

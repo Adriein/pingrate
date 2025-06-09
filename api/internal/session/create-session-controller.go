@@ -45,7 +45,9 @@ func NewCreateUserController(service *CreateSessionService) *CreateSessionContro
 	}
 }
 
-func (c *CreateSessionController) Handler(w http.ResponseWriter, r *http.Request) error {
+func (c *CreateSessionController) Handler(ctx *types.Ctx) error {
+	w, r := ctx.Res, ctx.Req
+
 	var request CreateSessionRequest
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&request); decodeErr != nil {
