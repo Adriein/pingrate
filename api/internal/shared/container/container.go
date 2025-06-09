@@ -14,7 +14,9 @@ const UserRepositoryInstance = "user_repository"
 const SessionRepositoryInstance = "session_repository"
 const GoogleIntegrationRepositoryInstance = "google_integration_repository"
 
-func New() map[string]interface{} {
+type DependencyContainer map[string]interface{}
+
+func New() DependencyContainer {
 	container := make(map[string]interface{})
 
 	database := initDatabase()

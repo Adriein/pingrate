@@ -59,12 +59,12 @@ func main() {
 	api.Route("POST /sessions", createSessionController())
 
 	// USER
-	api.Route("POST /users", createUserController(database))
-	api.Route("POST /users/login", loginUserController(database))
+	api.Route("POST /users", createUserController(depContainer))
+	api.Route("POST /users/login", loginUserController(depContainer))
 
 	// INTEGRATIONS
 	api.Route("GET /integrations/gmail/oauth", googleIntegrationController(), middleware.Auth())
-	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(database))
+	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(depContainer))
 
 	api.Start()
 }
@@ -83,9 +83,9 @@ func createSessionController() types.PingrateHttpHandler {
 	return controller.Handler
 }
 
-func loginUserController(database *sql.DB) types.PingrateHttpHandler {
-	userRepository := repository.NewPgUserRepository(database)
-	sessionRepository := repository.NewPgSessionRepository(database)
+func loginUserController(dep container.DependencyContainer) types.PingrateHttpHandler {
+	userRepository := dep[container.UserRepositoryInstance].(repository.UserRepository)
+	sessionRepository := dep[container.SessionRepositoryInstance].(repository.SessionRepository)
 
 	service := user.NewLoginUserService(userRepository, sessionRepository)
 
@@ -94,8 +94,8 @@ func loginUserController(database *sql.DB) types.PingrateHttpHandler {
 	return controller.Handler
 }
 
-func createUserController(database *sql.DB) types.PingrateHttpHandler {
-	userRepository := repository.NewPgUserRepository(database)
+func createUserController(dep container.DependencyContainer) types.PingrateHttpHandler {
+	userRepository := dep[container.UserRepositoryInstance].(repository.UserRepository)
 
 	service := user.NewCreateUserService(userRepository)
 
@@ -112,9 +112,9 @@ func googleIntegrationController() types.PingrateHttpHandler {
 	return controller.Handler
 }
 
-func googleOauthCallbackController(database *sql.DB) types.PingrateHttpHandler {
-	userRepository := repository.NewPgUserRepository(database)
-	googleIntegrationRepository := repository.NewPgGoogleIntegrationRepository(database)
+func googleOauthCallbackController(dep container.DependencyContainer) types.PingrateHttpHandler {
+	userRepository := dep[container.UserRepositoryInstance].(repository.UserRepository)
+	googleIntegrationRepository := dep[container.GoogleIntegrationRepositoryInstance].(repository.GoogleIntegrationRepository)
 
 	service := gmail.NewGoogleOauthCallbackService(userRepository, googleIntegrationRepository, external.NewGoogleApi())
 
