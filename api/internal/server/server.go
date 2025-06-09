@@ -58,16 +58,33 @@ func (s *PingrateApiServer) Start() {
 	}
 }
 
-func (s *PingrateApiServer) Route(url string, handler http.Handler) {
-	s.router.Handle(url, handler)
+func (s *PingrateApiServer) Route(url string, handler types.PingrateHttpHandler, middlewares ...types.Middleware) {
+	s.router.Handle(url, s.newHandler(handler, middlewares...))
 }
 
-func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler, middlewares ...types.Middleware) http.HandlerFunc {
+func (s *PingrateApiServer) newHandler(handler types.PingrateHttpHandler, middlewares ...types.Middleware) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := &types.Ctx{
 			Res:  w,
 			Req:  r,
 			Data: s.dependencies,
+		}
+
+		if len(middlewares) == 0 {
+			if err := handler(ctx); err != nil {
+				response := types.ServerResponse{
+					Ok:    false,
+					Error: constants.ServerGenericError,
+				}
+
+				encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, response)
+
+				if encodeErr != nil {
+					log.Fatal(eris.ToString(encodeErr, true))
+				}
+
+				slog.Error(fmt.Sprintf("%s TraceId=%s", eris.ToString(err, true), r.Header.Get("traceId")))
+			}
 		}
 
 		for i := 0; i < len(middlewares); i++ {
@@ -85,7 +102,6 @@ func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler, middle
 
 				slog.Error(fmt.Sprintf("%s TraceId=%s", eris.ToString(err, true), r.Header.Get("traceId")))
 			}
-
 		}
 	}
 }

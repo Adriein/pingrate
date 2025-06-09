@@ -12,11 +12,11 @@ import (
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/shared/repository"
+	"github.com/adriein/pingrate/internal/shared/types"
 	"github.com/adriein/pingrate/internal/user"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -62,37 +62,37 @@ func main() {
 		log.Fatal(dbConnErr.Error())
 	}
 
-	api.Route("GET /health", healthController(api))
+	api.Route("GET /health", healthController())
 
 	// SESSION
-	api.Route("POST /sessions", createSessionController(api, database))
+	api.Route("POST /sessions", createSessionController())
 
 	// USER
-	api.Route("POST /users", createUserController(api, database))
-	api.Route("POST /users/login", loginUserController(api, database))
+	api.Route("POST /users", createUserController(database))
+	api.Route("POST /users/login", loginUserController(database))
 
 	// INTEGRATIONS
-	api.Route("GET /integrations/gmail/oauth", googleIntegrationController(api))
-	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(api, database))
+	api.Route("GET /integrations/gmail/oauth", googleIntegrationController(), middleware.Auth())
+	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(database))
 
 	api.Start()
 }
 
-func healthController(api *server.PingrateApiServer) http.HandlerFunc {
+func healthController() types.PingrateHttpHandler {
 	controller := health.NewController()
 
-	return api.NewHandler(controller.Handler)
+	return controller.Handler
 }
 
-func createSessionController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+func createSessionController() types.PingrateHttpHandler {
 	service := session.NewCreateSessionService()
 
 	controller := session.NewCreateUserController(service)
 
-	return api.NewHandler(controller.Handler)
+	return controller.Handler
 }
 
-func loginUserController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+func loginUserController(database *sql.DB) types.PingrateHttpHandler {
 	userRepository := repository.NewPgUserRepository(database)
 	sessionRepository := repository.NewPgSessionRepository(database)
 
@@ -100,28 +100,28 @@ func loginUserController(api *server.PingrateApiServer, database *sql.DB) http.H
 
 	controller := user.NewLoginUserController(service)
 
-	return api.NewHandler(controller.Handler)
+	return controller.Handler
 }
 
-func createUserController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+func createUserController(database *sql.DB) types.PingrateHttpHandler {
 	userRepository := repository.NewPgUserRepository(database)
 
 	service := user.NewCreateUserService(userRepository)
 
 	controller := user.NewCreateUserController(service)
 
-	return api.NewHandler(controller.Handler)
+	return controller.Handler
 }
 
-func googleIntegrationController(api *server.PingrateApiServer) http.HandlerFunc {
+func googleIntegrationController() types.PingrateHttpHandler {
 	service := gmail.NewGoogleOauthService(external.NewGoogleApi())
 
 	controller := gmail.NewGoogleOauthController(service)
 
-	return api.NewHandler(controller.Handler, middleware.Auth())
+	return controller.Handler
 }
 
-func googleOauthCallbackController(api *server.PingrateApiServer, database *sql.DB) http.HandlerFunc {
+func googleOauthCallbackController(database *sql.DB) types.PingrateHttpHandler {
 	userRepository := repository.NewPgUserRepository(database)
 	googleIntegrationRepository := repository.NewPgGoogleIntegrationRepository(database)
 
@@ -129,5 +129,5 @@ func googleOauthCallbackController(api *server.PingrateApiServer, database *sql.
 
 	controller := gmail.NewGoogleOauthCallbackController(service)
 
-	return api.NewHandler(controller.Handler)
+	return controller.Handler
 }

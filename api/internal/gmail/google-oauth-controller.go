@@ -21,15 +21,15 @@ func NewGoogleOauthController(
 }
 
 func (h *GoogleOauthController) Handler(ctx *types.Ctx) error {
-	w, r := ctx.Res, ctx.Req
+	w := ctx.Res
 
-	userEmail, ok := r.Context().Value(middleware.SessionContextKey).(string)
+	session, ok := ctx.Data[middleware.SessionContextKey].(*types.Session)
 
 	if !ok {
-		return eris.New("User key inside the context is not a string")
+		return eris.New("Session not present in context")
 	}
 
-	googleAuthUrl := h.service.Execute(userEmail)
+	googleAuthUrl := h.service.Execute(session.Email)
 
 	response := types.ServerResponse{
 		Ok:   true,
