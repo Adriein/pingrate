@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/shared/types"
@@ -13,16 +14,18 @@ import (
 )
 
 type PingrateApiServer struct {
-	address string
-	router  *http.ServeMux
+	address      string
+	router       *http.ServeMux
+	dependencies map[string]interface{}
 }
 
 func New(address string) (*PingrateApiServer, error) {
 	router := http.NewServeMux()
 
 	return &PingrateApiServer{
-		address: address,
-		router:  router,
+		address:      address,
+		router:       router,
+		dependencies: container.New(),
 	}, nil
 }
 
@@ -30,13 +33,18 @@ func (s *PingrateApiServer) Start() {
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", s.router))
 
-	MuxMiddleWareChain := middleware.NewMiddlewareChain(
+	/*MuxMiddleWareChain := middleware.NewMiddlewareChain(
 		middleware.NewRequestTracingMiddleware,
 	)
 
 	server := http.Server{
 		Addr:    s.address,
 		Handler: MuxMiddleWareChain.ApplyOn(v1),
+	}*/
+
+	server := http.Server{
+		Addr:    s.address,
+		Handler: middleware.RequestTracing(v1),
 	}
 
 	slog.Info("Starting the PingrateApiServer at " + s.address)
@@ -54,21 +62,34 @@ func (s *PingrateApiServer) Route(url string, handler http.Handler) {
 	s.router.Handle(url, handler)
 }
 
-func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler) http.HandlerFunc {
+func (s *PingrateApiServer) NewHandler(handler types.PingrateHttpHandler, middlewares ...types.Middleware) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := handler(w, r); err != nil {
-			response := types.ServerResponse{
-				Ok:    false,
-				Error: constants.ServerGenericError,
+		ctx := &types.Ctx{
+			Res:  w,
+			Req:  r,
+			Data: s.dependencies,
+		}
+
+		for i := 0; i < len(middlewares); i++ {
+			if err := middlewares[i](handler)(ctx); err != nil {
+				response := types.ServerResponse{
+					Ok:    false,
+					Error: constants.ServerGenericError,
+				}
+
+				encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, response)
+
+				if encodeErr != nil {
+					log.Fatal(eris.ToString(encodeErr, true))
+				}
+
+				slog.Error(fmt.Sprintf("%s TraceId=%s", eris.ToString(err, true), r.Header.Get("traceId")))
 			}
 
-			encodeErr := helper.Encode[types.ServerResponse](w, http.StatusInternalServerError, response)
-
-			if encodeErr != nil {
-				log.Fatal(eris.ToString(encodeErr, true))
-			}
-
-			slog.Error(fmt.Sprintf("%s TraceId=%s", eris.ToString(err, true), r.Header.Get("traceId")))
 		}
 	}
+}
+
+func (s *PingrateApiServer) Get(name string) interface{} {
+	return s.dependencies[name]
 }

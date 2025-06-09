@@ -2,4 +2,10 @@ package types
 
 import "net/http"
 
-type PingrateHttpHandler func(w http.ResponseWriter, r *http.Request) error
+type Ctx struct {
+	Res  http.ResponseWriter
+	Req  *http.Request
+	Data map[string]interface{}
+}
+
+type PingrateHttpHandler func(ctx *Ctx) error

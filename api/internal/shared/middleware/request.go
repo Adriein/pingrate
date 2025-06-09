@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func NewRequestTracingMiddleware(handler http.Handler) http.Handler {
+func RequestTracing(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		id := uuid.New()

@@ -20,8 +20,10 @@ func NewGoogleOauthController(
 	}
 }
 
-func (h *GoogleOauthController) Handler(w http.ResponseWriter, r *http.Request) error {
-	userEmail, ok := r.Context().Value(middleware.UserContextKey).(string)
+func (h *GoogleOauthController) Handler(ctx *types.Ctx) error {
+	w, r := ctx.Res, ctx.Req
+
+	userEmail, ok := r.Context().Value(middleware.SessionContextKey).(string)
 
 	if !ok {
 		return eris.New("User key inside the context is not a string")

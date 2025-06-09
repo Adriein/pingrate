@@ -1,84 +1,70 @@
 package middleware
 
 import (
-	"context"
+	"errors"
+	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/repository"
 	"github.com/adriein/pingrate/internal/shared/types"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	"os"
 )
 
-const UserContextKey = "user"
+const SessionContextKey = "session"
 
-func NewAuthMiddleWare(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, cookieErr := r.Cookie("$session")
+func Auth() types.Middleware {
+	return func(next types.PingrateHttpHandler) types.PingrateHttpHandler {
+		return func(ctx *types.Ctx) error {
+			r, w := ctx.Req, ctx.Res
 
-		if cookieErr != nil {
-			response := types.ServerResponse{
-				Ok:    false,
-				Error: constants.MissingJwt,
+			sessionRepository, ok := ctx.Data[container.SessionRepositoryInstance].(repository.SessionRepository)
+
+			if !ok {
+				return fmt.Errorf("user repository not found")
 			}
 
-			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
-				http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
-			}
+			cookie, cookieErr := r.Cookie("$session")
 
-			return
-		}
-
-		tokenStr := cookie.Value
-
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv(constants.JwtSecret)), nil
-		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
-
-		if err != nil || !token.Valid {
-			response := types.ServerResponse{
-				Ok:    false,
-				Error: constants.InvalidJwt,
-			}
-
-			if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
-				http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
-			}
-
-			return
-		}
-
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			userEmail, okEmail := claims["user"].(string)
-			if !okEmail {
+			if cookieErr != nil {
 				response := types.ServerResponse{
 					Ok:    false,
-					Error: constants.InvalidStructureJwt,
+					Error: constants.MissingSessionCookie,
 				}
 
 				if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
 					http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
 				}
 
-				return
+				return nil
 			}
 
-			ctx := context.WithValue(r.Context(), "user", userEmail)
+			sessionId := cookie.Value
 
-			handler.ServeHTTP(w, r.WithContext(ctx))
+			criteria := types.NewCriteria().Equal("se_id", sessionId)
 
-			return
+			session, sessionRepoErr := sessionRepository.FindOne(criteria)
+
+			if sessionRepoErr != nil {
+				if errors.Is(sessionRepoErr, types.SessionNotFoundError) {
+					response := types.ServerResponse{
+						Ok:    false,
+						Error: constants.InvalidSession,
+					}
+
+					if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
+						http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
+					}
+
+					return nil
+				}
+
+				return sessionRepoErr
+			}
+
+			ctx.Data[SessionContextKey] = session
+
+			return next(ctx)
 		}
-
-		response := types.ServerResponse{
-			Ok:    false,
-			Error: constants.InvalidStructureJwt,
-		}
-
-		if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusUnauthorized, response); encodeErr != nil {
-			http.Error(w, encodeErr.Error(), http.StatusInternalServerError)
-		}
-
-		handler.ServeHTTP(w, r)
-	})
+	}
 }
