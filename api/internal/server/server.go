@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
-	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/shared/types"
@@ -19,13 +18,13 @@ type PingrateApiServer struct {
 	dependencies map[string]interface{}
 }
 
-func New(address string) (*PingrateApiServer, error) {
+func New(address string, container map[string]interface{}) (*PingrateApiServer, error) {
 	router := http.NewServeMux()
 
 	return &PingrateApiServer{
 		address:      address,
 		router:       router,
-		dependencies: container.New(),
+		dependencies: container,
 	}, nil
 }
 

@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/adriein/pingrate/internal/gmail"
 	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/server"
 	"github.com/adriein/pingrate/internal/session"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/external"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/middleware"
@@ -41,26 +41,17 @@ func main() {
 		log.Fatal(envCheckerErr.Error())
 	}
 
-	api, newServerErr := server.New(os.Getenv(constants.ServerPort))
+	depContainer := container.New()
+
+	api, newServerErr := server.New(os.Getenv(constants.ServerPort), depContainer)
 
 	if newServerErr != nil {
 		log.Fatal(newServerErr.Error())
 	}
 
-	databaseDsn := fmt.Sprintf(
-		"postgresql://%s:%s@localhost:5432/%s?sslmode=disable",
-		os.Getenv(constants.DatabaseUser),
-		os.Getenv(constants.DatabasePassword),
-		os.Getenv(constants.DatabaseName),
-	)
-
-	database, dbConnErr := sql.Open("postgres", databaseDsn)
+	database := depContainer[container.DatabaseInstance].(*sql.DB)
 
 	defer database.Close()
-
-	if dbConnErr != nil {
-		log.Fatal(dbConnErr.Error())
-	}
 
 	api.Route("GET /health", healthController())
 
