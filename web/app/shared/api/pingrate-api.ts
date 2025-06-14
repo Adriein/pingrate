@@ -49,24 +49,28 @@ export const signin = async (payload: SigninForm): Promise<PingrateApiResponse<S
 };
 
 //INTEGRATIONS
-export const askForGmailPermissions = async (): Promise<PingrateApiResponse<any>> => {
-    return await get("/integrations/gmail");
+export type AskGmailPermissionsResponse = { ok: boolean, data: string, error: string | undefined }
+
+export const askGmailPermissions = async (sessionId: string): Promise<PingrateApiResponse<AskGmailPermissionsResponse>> => {
+    return await get("/integrations/gmail", { 'Cookie': `$session=${sessionId}` });
 };
 
 
 
 //SHARED
-const get = async <T>(resource: string): Promise<PingrateApiResponse<T>> => {
+const get = async <T>(resource: string, headers: Record<string, string>): Promise<PingrateApiResponse<T>> => {
     try {
         const request: Request = new Request(`${PINGRATE_API_V1_URL}${resource}`, {
             method: "GET",
+            credentials: 'include',
+            headers: headers
         });
 
         const response: Response = await fetch(request);
 
-        console.log(response);
-
         const body: T = await response.json();
+
+        console.log(body);
 
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
@@ -76,7 +80,7 @@ const get = async <T>(resource: string): Promise<PingrateApiResponse<T>> => {
         const cookieHeader: string|null = response.headers.get("set-cookie");
 
         if (cookieHeader) {
-            const cookies: PingrateCookie[] = [parseCookie(cookieHeader)];
+            const cookies: PingrateCookie[] = [await parseCookie(cookieHeader)];
 
             return new PingrateApiResponse<T>(true, body, cookies);
         }
@@ -109,7 +113,7 @@ const post = async <T>(resource: string, payload: Record<string, any>): Promise<
         const cookieHeader: string|null = response.headers.get("set-cookie");
 
         if (cookieHeader) {
-            const cookies: PingrateCookie[] = [parseCookie(cookieHeader)];
+            const cookies: PingrateCookie[] = [await parseCookie(cookieHeader)];
 
             return new PingrateApiResponse<T>(true, body, cookies);
         }
