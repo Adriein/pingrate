@@ -48,12 +48,11 @@ export const signin = async (payload: SigninForm): Promise<PingrateApiResponse<S
     return await post<SignupResponse>("/users/login", payload);
 };
 
-//AUTH
-export type WhoAmIResponse = {};
+//INTEGRATIONS
+export const askForGmailPermissions = async (): Promise<PingrateApiResponse<any>> => {
+    return await get("/integrations/gmail");
+};
 
-export const whoAmI = async () => {
-    return await get("");
-}
 
 
 //SHARED
@@ -65,7 +64,9 @@ const get = async <T>(resource: string): Promise<PingrateApiResponse<T>> => {
 
         const response: Response = await fetch(request);
 
-        const body = await response.json();
+        console.log(response);
+
+        const body: T = await response.json();
 
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {

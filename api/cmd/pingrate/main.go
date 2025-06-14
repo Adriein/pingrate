@@ -63,7 +63,7 @@ func main() {
 	api.Route("POST /users/login", loginUserController(depContainer))
 
 	// INTEGRATIONS
-	api.Route("GET /integrations/gmail/oauth", googleIntegrationController(), middleware.Auth())
+	api.Route("GET /integrations/gmail", googleIntegrationController(), middleware.Auth())
 	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(depContainer))
 
 	api.Start()

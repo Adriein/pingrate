@@ -22,5 +22,7 @@ const GmailIcon = (props: React.ComponentPropsWithoutRef<'svg'>) => {
 }
 
 export function GmailButton(props: ButtonProps & React.ComponentPropsWithoutRef<'button'>) {
-    return <Button leftSection={<GmailIcon />} variant="default" {...props} />;
+    return (
+        <Button leftSection={<GmailIcon />} variant="default" {...props} />
+    );
 }
