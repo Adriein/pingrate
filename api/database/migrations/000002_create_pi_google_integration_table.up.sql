@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS pi_google_integration (
     gi_google_access_token VARCHAR(255) NOT NULL,
     gi_google_token_type VARCHAR(255) NOT NULL,
     gi_google_refresh_token VARCHAR(255) NOT NULL,
+    gi_google_token_expiry VARCHAR(60) NOT NULL,
     gi_created_at VARCHAR(60) NOT NULL,
     gi_updated_at VARCHAR(60) NOT NULL
 );

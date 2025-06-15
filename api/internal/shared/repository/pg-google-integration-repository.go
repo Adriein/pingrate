@@ -15,7 +15,7 @@ type PgGoogleIntegrationRepository struct {
 }
 
 func NewPgGoogleIntegrationRepository(connection *sql.DB) *PgGoogleIntegrationRepository {
-	transformer, _ := helper.NewCriteriaToSqlService(&types.GoogleToken{})
+	transformer, _ := helper.NewCriteriaToSqlService(&types.GoogleIntegration{})
 
 	return &PgGoogleIntegrationRepository{
 		connection:  connection,
@@ -23,7 +23,7 @@ func NewPgGoogleIntegrationRepository(connection *sql.DB) *PgGoogleIntegrationRe
 	}
 }
 
-func (r *PgGoogleIntegrationRepository) Find(criteria types.Criteria) ([]types.GoogleToken, error) {
+func (r *PgGoogleIntegrationRepository) Find(criteria types.Criteria) ([]types.GoogleIntegration, error) {
 	query, err := r.transformer.Transform(criteria)
 
 	if err != nil {
@@ -44,11 +44,12 @@ func (r *PgGoogleIntegrationRepository) Find(criteria types.Criteria) ([]types.G
 		gi_google_access_token  string
 		gi_google_token_type    string
 		gi_google_refresh_token string
+		gi_google_token_expiry  string
 		gi_created_at           string
 		gi_updated_at           string
 	)
 
-	var results []types.GoogleToken
+	var results []types.GoogleIntegration
 
 	for rows.Next() {
 		if scanErr := rows.Scan(
@@ -57,18 +58,20 @@ func (r *PgGoogleIntegrationRepository) Find(criteria types.Criteria) ([]types.G
 			&gi_google_access_token,
 			&gi_google_token_type,
 			&gi_google_refresh_token,
+			&gi_google_token_expiry,
 			&gi_created_at,
 			&gi_updated_at,
 		); scanErr != nil {
 			return nil, eris.New(scanErr.Error())
 		}
 
-		results = append(results, types.GoogleToken{
+		results = append(results, types.GoogleIntegration{
 			Id:           gi_id,
 			UserEmail:    gi_user_email,
 			AccessToken:  gi_google_access_token,
 			TokenType:    gi_google_token_type,
 			RefreshToken: gi_google_refresh_token,
+			Expiry:       gi_google_token_expiry,
 			CreatedAt:    gi_created_at,
 			UpdatedAt:    gi_updated_at,
 		})
@@ -77,7 +80,7 @@ func (r *PgGoogleIntegrationRepository) Find(criteria types.Criteria) ([]types.G
 	return results, nil
 }
 
-func (r *PgGoogleIntegrationRepository) FindOne(criteria types.Criteria) (*types.GoogleToken, error) {
+func (r *PgGoogleIntegrationRepository) FindOne(criteria types.Criteria) (*types.GoogleIntegration, error) {
 	query, err := r.transformer.Transform(criteria)
 
 	if err != nil {
@@ -90,6 +93,7 @@ func (r *PgGoogleIntegrationRepository) FindOne(criteria types.Criteria) (*types
 		gi_google_access_token  string
 		gi_google_token_type    string
 		gi_google_refresh_token string
+		gi_google_token_expiry  string
 		gi_created_at           string
 		gi_updated_at           string
 	)
@@ -100,6 +104,7 @@ func (r *PgGoogleIntegrationRepository) FindOne(criteria types.Criteria) (*types
 		&gi_google_access_token,
 		&gi_google_token_type,
 		&gi_google_refresh_token,
+		&gi_google_token_expiry,
 		&gi_created_at,
 		&gi_updated_at,
 	); scanErr != nil {
@@ -110,23 +115,24 @@ func (r *PgGoogleIntegrationRepository) FindOne(criteria types.Criteria) (*types
 		return nil, eris.New(scanErr.Error())
 	}
 
-	return &types.GoogleToken{
+	return &types.GoogleIntegration{
 		Id:           gi_id,
 		UserEmail:    gi_user_email,
 		AccessToken:  gi_google_access_token,
 		TokenType:    gi_google_token_type,
 		RefreshToken: gi_google_refresh_token,
+		Expiry:       gi_google_token_expiry,
 		CreatedAt:    gi_created_at,
 		UpdatedAt:    gi_updated_at,
 	}, nil
 }
 
-func (r *PgGoogleIntegrationRepository) Save(entity *types.GoogleToken) error {
+func (r *PgGoogleIntegrationRepository) Save(entity *types.GoogleIntegration) error {
 	var query strings.Builder
 
 	query.WriteString(`INSERT INTO pi_google_integration `)
-	query.WriteString(`(gi_id, gi_user_email, gi_google_access_token, gi_google_token_type, gi_google_refresh_token, gi_created_at, gi_updated_at) `)
-	query.WriteString(`VALUES ($1, $2, $3, $4, $5, $6, $7);`)
+	query.WriteString(`(gi_id, gi_user_email, gi_google_access_token, gi_google_token_type, gi_google_refresh_token, gi_google_token_expiry, gi_created_at, gi_updated_at) `)
+	query.WriteString(`VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`)
 
 	_, err := r.connection.Exec(
 		query.String(),
@@ -135,6 +141,7 @@ func (r *PgGoogleIntegrationRepository) Save(entity *types.GoogleToken) error {
 		entity.AccessToken,
 		entity.TokenType,
 		entity.RefreshToken,
+		entity.Expiry,
 		entity.CreatedAt,
 		entity.UpdatedAt,
 	)
@@ -146,12 +153,12 @@ func (r *PgGoogleIntegrationRepository) Save(entity *types.GoogleToken) error {
 	return nil
 }
 
-func (r *PgGoogleIntegrationRepository) Update(entity *types.GoogleToken) error {
+func (r *PgGoogleIntegrationRepository) Update(entity *types.GoogleIntegration) error {
 	var query strings.Builder
 
 	query.WriteString(`UPDATE pi_google_integration SET `)
-	query.WriteString(`gi_user_email = $1, gi_google_access_token = $2, gi_google_token_type = $3, gi_google_refresh_token = $4, gi_updated_at = $5 `)
-	query.WriteString(`WHERE gi_id = $6;`)
+	query.WriteString(`gi_user_email = $1, gi_google_access_token = $2, gi_google_token_type = $3, gi_google_refresh_token = $4, gi_google_token_expiry = $5 gi_updated_at = $6 `)
+	query.WriteString(`WHERE gi_id = $7;`)
 
 	_, err := r.connection.Exec(
 		query.String(),
@@ -159,6 +166,7 @@ func (r *PgGoogleIntegrationRepository) Update(entity *types.GoogleToken) error 
 		entity.AccessToken,
 		entity.TokenType,
 		entity.RefreshToken,
+		entity.Expiry,
 		entity.UpdatedAt,
 		entity.Id,
 	)

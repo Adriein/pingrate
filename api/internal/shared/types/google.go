@@ -6,12 +6,13 @@ var (
 	GoogleTokenNotFoundError = eris.New("google token not found")
 )
 
-type GoogleToken struct {
+type GoogleIntegration struct {
 	Id           string
 	UserEmail    string
 	AccessToken  string
 	TokenType    string
 	RefreshToken string
+	Expiry       string
 	CreatedAt    string
 	UpdatedAt    string
 }

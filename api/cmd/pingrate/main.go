@@ -66,6 +66,9 @@ func main() {
 	api.Route("GET /integrations/gmail", googleIntegrationController(), middleware.Auth())
 	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(depContainer))
 
+	// GMAIL
+	api.Route("GET /gmail", googleGmailController(depContainer), middleware.Auth())
+
 	api.Start()
 }
 
@@ -119,6 +122,16 @@ func googleOauthCallbackController(dep container.DependencyContainer) types.Ping
 	service := gmail.NewGoogleOauthCallbackService(userRepository, googleIntegrationRepository, external.NewGoogleApi())
 
 	controller := gmail.NewGoogleOauthCallbackController(service)
+
+	return controller.Handler
+}
+
+func googleGmailController(dep container.DependencyContainer) types.PingrateHttpHandler {
+	googleIntegrationRepository := dep[container.GoogleIntegrationRepositoryInstance].(repository.GoogleIntegrationRepository)
+
+	service := gmail.NewGetGmailService(external.NewGoogleApi(), googleIntegrationRepository)
+
+	controller := gmail.NewGetGmailController(service)
 
 	return controller.Handler
 }

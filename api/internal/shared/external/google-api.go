@@ -36,7 +36,7 @@ func (g *GoogleApi) GetAuthCodeUrlForUser(userEmail string) string {
 	return config.AuthCodeURL(userEmail, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(userEmail))
 }
 
-func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken, error) {
+func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleIntegration, error) {
 	ctx := context.Background()
 	config := g.GetOauth2Config()
 
@@ -46,12 +46,13 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken
 		return nil, eris.New(exchangeErr.Error())
 	}
 
-	googleToken := &types.GoogleToken{
+	googleToken := &types.GoogleIntegration{
 		Id:           uuid.New().String(),
 		UserEmail:    state,
 		AccessToken:  token.AccessToken,
 		TokenType:    token.TokenType,
 		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry.Format(time.DateTime),
 		CreatedAt:    time.Now().UTC().Format(time.DateTime),
 		UpdatedAt:    time.Now().UTC().Format(time.DateTime),
 	}
@@ -59,7 +60,7 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleToken
 	return googleToken, nil
 }
 
-func (g *GoogleApi) GmailClient(userToken *types.GoogleToken) (*gmail.Service, error) {
+func (g *GoogleApi) GmailClient(userToken *types.GoogleIntegration) (*gmail.Service, error) {
 	ctx := context.Background()
 
 	config := g.GetOauth2Config()
@@ -68,6 +69,7 @@ func (g *GoogleApi) GmailClient(userToken *types.GoogleToken) (*gmail.Service, e
 		AccessToken:  userToken.AccessToken,
 		TokenType:    userToken.TokenType,
 		RefreshToken: userToken.RefreshToken,
+		Expiry:       time.Now(),
 	}
 
 	client, newServiceErr := gmail.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))

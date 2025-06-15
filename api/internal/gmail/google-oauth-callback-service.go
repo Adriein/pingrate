@@ -1,6 +1,7 @@
 package gmail
 
 import (
+	"errors"
 	"github.com/adriein/pingrate/internal/shared/external"
 	"github.com/adriein/pingrate/internal/shared/repository"
 	"github.com/adriein/pingrate/internal/shared/types"
@@ -41,38 +42,39 @@ func (s *GoogleOauthCallbackService) Execute(userEmail string, code string) erro
 		types.NewCriteria().Equal("gi_user_email", userEmail),
 	)
 
-	if tokenFindOneErr != nil {
-		return tokenFindOneErr
-	}
-
-	if currentToken != nil {
-		var refreshToken = ""
-
-		if googleToken.RefreshToken != "" {
-			refreshToken = googleToken.RefreshToken
-		} else {
-			refreshToken = currentToken.RefreshToken
-		}
-
-		mergedToken := &types.GoogleToken{
-			Id:           currentToken.Id,
-			UserEmail:    currentToken.UserEmail,
-			AccessToken:  googleToken.AccessToken,
-			TokenType:    currentToken.TokenType,
-			RefreshToken: refreshToken,
-			CreatedAt:    currentToken.CreatedAt,
-			UpdatedAt:    googleToken.UpdatedAt,
-		}
-
-		if updateErr := s.googleRepository.Update(mergedToken); updateErr != nil {
-			return updateErr
+	if errors.Is(tokenFindOneErr, types.GoogleTokenNotFoundError) {
+		if saveErr := s.googleRepository.Save(googleToken); saveErr != nil {
+			return saveErr
 		}
 
 		return nil
 	}
 
-	if saveErr := s.googleRepository.Save(googleToken); saveErr != nil {
-		return saveErr
+	if tokenFindOneErr != nil {
+		return tokenFindOneErr
+	}
+
+	var refreshToken = ""
+
+	if googleToken.RefreshToken != "" {
+		refreshToken = googleToken.RefreshToken
+	} else {
+		refreshToken = currentToken.RefreshToken
+	}
+
+	mergedToken := &types.GoogleIntegration{
+		Id:           currentToken.Id,
+		UserEmail:    currentToken.UserEmail,
+		AccessToken:  googleToken.AccessToken,
+		TokenType:    currentToken.TokenType,
+		RefreshToken: refreshToken,
+		Expiry:       googleToken.Expiry,
+		CreatedAt:    currentToken.CreatedAt,
+		UpdatedAt:    googleToken.UpdatedAt,
+	}
+
+	if updateErr := s.googleRepository.Update(mergedToken); updateErr != nil {
+		return updateErr
 	}
 
 	return nil
