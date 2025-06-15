@@ -1,7 +1,6 @@
 package gmail
 
 import (
-	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/types"
 	"github.com/rotisserie/eris"
 	"net/http"
@@ -36,13 +35,7 @@ func (c *GoogleOauthCallbackController) Handler(ctx *types.Ctx) error {
 		return err
 	}
 
-	response := types.ServerResponse{
-		Ok: true,
-	}
-
-	if encodeErr := helper.Encode[types.ServerResponse](w, http.StatusOK, response); encodeErr != nil {
-		return encodeErr
-	}
+	http.Redirect(w, r, "http://localhost:5173/dashboard", http.StatusFound)
 
 	return nil
 }

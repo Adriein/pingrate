@@ -1,4 +1,4 @@
-import {type Cookie, createCookie} from "react-router";
+import {type Cookie, type CookieSerializeOptions, createCookie} from "react-router";
 
 export interface PingrateCookie extends Cookie {
     readonly value: string;
@@ -14,10 +14,49 @@ export const COOKIE_HEADER = "cookie";
 export async function parseCookie(cookieString: string): Promise<PingrateCookie> {
     const parts = cookieString.split(';').map(part => part.trim());
 
-    const [nameValue,] = parts;
+    const [nameValue, ...attributes] = parts;
     const [name, value] = nameValue.split('=').map(part => part.trim());
 
-    const remixCookie: Cookie = await createCookie(name).parse(cookieString);
+    const options: CookieSerializeOptions = {
+        expires: undefined,
+        path: undefined,
+        domain: undefined,
+        secure: undefined,
+        httpOnly: undefined,
+        sameSite: undefined
+    };
+
+    // Parse the attributes
+    for (const attr of attributes) {
+        if (attr.toLowerCase().startsWith('path=')) {
+            options.path = attr.substring(5).trim();
+        }
+
+        if (attr.toLowerCase().startsWith('expires=')) {
+            options.expires = new Date(attr.substring(8).trim());
+        }
+
+        if (attr.toLowerCase().startsWith('domain=')) {
+            options.domain = attr.substring(7).trim();
+        }
+
+        if (attr.toLowerCase() === 'secure') {
+            options.secure = true;
+        }
+
+        if (attr.toLowerCase() === 'httponly') {
+            options.httpOnly = true;
+        }
+
+        if (attr.toLowerCase().startsWith('samesite=')) {
+            const sameSiteValue = attr.substring(9).trim().toLowerCase();
+            if (sameSiteValue === 'lax' || sameSiteValue === 'strict' || sameSiteValue === 'none') {
+                options.sameSite = sameSiteValue as "lax" | "strict" | "none";
+            }
+        }
+    }
+
+    const remixCookie: Cookie = createCookie(name, options);
 
     return {value, ...remixCookie};
 }
