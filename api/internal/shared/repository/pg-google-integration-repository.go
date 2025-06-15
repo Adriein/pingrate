@@ -146,6 +146,26 @@ func (r *PgGoogleIntegrationRepository) Save(entity *types.GoogleToken) error {
 	return nil
 }
 
-func (r *PgGoogleIntegrationRepository) Update(_ *types.GoogleToken) error {
-	return eris.New("Method not implemented")
+func (r *PgGoogleIntegrationRepository) Update(entity *types.GoogleToken) error {
+	var query strings.Builder
+
+	query.WriteString(`UPDATE pi_google_integration SET `)
+	query.WriteString(`gi_user_email = $1, gi_google_access_token = $2, gi_google_token_type = $3, gi_google_refresh_token = $4, gi_updated_at = $5 `)
+	query.WriteString(`WHERE gi_id = $6;`)
+
+	_, err := r.connection.Exec(
+		query.String(),
+		entity.UserEmail,
+		entity.AccessToken,
+		entity.TokenType,
+		entity.RefreshToken,
+		entity.UpdatedAt,
+		entity.Id,
+	)
+
+	if err != nil {
+		return eris.New(err.Error())
+	}
+
+	return nil
 }

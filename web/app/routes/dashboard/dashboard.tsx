@@ -1,12 +1,13 @@
 import type {Route} from "~/.react-router/types/app/routes/landing/+types/landing";
 import Integration from "@app/routes/dashboard/integration/integration";
-import {Outlet, redirect} from "react-router";
+import {data, Outlet, redirect} from "react-router";
 import {COOKIE_HEADER, type SessionCookie, sessionCookie} from "@app/cookies-helper";
 import {
     askGmailPermissions,
     type AskGmailPermissionsResponse,
     PingrateApiResponse,
 } from "@app/shared/api/pingrate-api";
+import React from "react";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -43,7 +44,7 @@ export async function action({request}: Route.ActionArgs){
             const response: PingrateApiResponse<AskGmailPermissionsResponse> = await askGmailPermissions(session.id);
 
             if (!response.ok) {
-                return redirect("/dashboard");
+                return data({ error: "Something went wrong" }, { status: 500 });
             }
 
             return redirect(response.body?.data!);

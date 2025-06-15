@@ -70,8 +70,6 @@ const get = async <T>(resource: string, headers: Record<string, string>): Promis
 
         const body: T = await response.json();
 
-        console.log(body);
-
         // response.ok only checks if the server responded with 2XX
         if (!response.ok) {
             return PingrateApiResponse.error<T>(body);
