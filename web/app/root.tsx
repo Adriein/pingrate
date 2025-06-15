@@ -17,6 +17,7 @@ import {
 
 import type { Route } from "./+types/root";
 import {PingrateTheme} from "@app/pingrate-theme";
+import React from "react";
 
 const pingrateTheme = createTheme(PingrateTheme);
 

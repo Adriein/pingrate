@@ -42,7 +42,7 @@ import classes from "./signup.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
 import {type SignupTranslations, translate} from "@app/locale.server";
 import {ES} from "@app/shared/constants";
-import {type PingrateCookie, sessionCookie} from "@app/cookies-helper";
+import {COOKIE_HEADER, type PingrateCookie, sessionCookie} from "@app/cookies-helper";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -54,7 +54,7 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
     const { fromSession } = sessionCookie();
 
-    const session: Cookie|null = await fromSession(request.headers.get('cookie'));
+    const session: Cookie|null = await fromSession(request.headers.get(COOKIE_HEADER));
 
     if (session) {
         return redirect("/dashboard");
@@ -77,8 +77,8 @@ export async function action({request}: Route.ActionArgs){
     });
 
     if (!signupResponse.ok) {
-        if (signupResponse.data?.error === VALIDATION_ERROR) {
-            return data({ error: signupResponse.data.data }, { status: 400 });
+        if (signupResponse.body?.error === VALIDATION_ERROR) {
+            return data({ error: signupResponse.body.data }, { status: 400 });
         }
 
         return data({ error: "Something went wrong" }, { status: 500 });

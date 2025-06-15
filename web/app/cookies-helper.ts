@@ -4,6 +4,8 @@ export interface PingrateCookie extends Cookie {
     readonly value: string;
 }
 
+export const COOKIE_HEADER = "cookie";
+
 /**
  * Parses a cookie string into a PingrateCookie object
  * @param cookieString - The cookie string to parse (e.g. "$session=c5189e43-3c5e-4caa-9560-fe35ccd45d58; Path=/; Expires=Sun, 08 Jun 2025 15:47:46 GMT; HttpOnly; SameSite=Lax")

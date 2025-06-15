@@ -31,7 +31,7 @@ import PingrateLogo from "@app/shared/img/pingrate-logo.png";
 import {PingrateApiResponse, signin, type SigninResponse, VALIDATION_ERROR} from "@app/shared/api/pingrate-api";
 import classes from "./signin.module.css";
 import PingrateError from "@app/shared/component/error/pingrate-error";
-import {type PingrateCookie, sessionCookie} from "@app/cookies-helper";
+import {COOKIE_HEADER, type PingrateCookie, sessionCookie} from "@app/cookies-helper";
 import {type SigninTranslations, translate} from "@app/locale.server";
 import {ES} from "@app/shared/constants";
 
@@ -45,7 +45,7 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
     const { fromSession } = sessionCookie();
 
-    const session: Cookie|null = await fromSession(request.headers.get('cookie'));
+    const session: Cookie|null = await fromSession(request.headers.get(COOKIE_HEADER));
 
     if (session) {
         return redirect("/dashboard");
@@ -67,8 +67,8 @@ export async function action({request}: Route.ActionArgs){
     });
 
     if (!response.ok) {
-        if (response.data?.error === VALIDATION_ERROR) {
-            return data({ error: response.data.data }, { status: 400 });
+        if (response.body?.error === VALIDATION_ERROR) {
+            return data({ error: response.body.data }, { status: 400 });
         }
 
         return data({ error: "Something went wrong" }, { status: 500 });

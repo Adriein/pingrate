@@ -8,7 +8,7 @@ export class PingrateApiResponse<T = undefined> {
     }
     public constructor(
         private _ok: boolean,
-        private _data?: T,
+        private _body?: T,
         private _cookies: PingrateCookie[] = [],
         private _error?: Error,
     ) {}
@@ -17,8 +17,8 @@ export class PingrateApiResponse<T = undefined> {
         return this._ok;
     }
 
-    public get data(): T | undefined {
-        return this._data;
+    public get body(): T | undefined {
+        return this._body;
     }
 
     public get cookies(): PingrateCookie[] {
