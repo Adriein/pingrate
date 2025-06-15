@@ -65,11 +65,17 @@ func (g *GoogleApi) GmailClient(userToken *types.GoogleIntegration) (*gmail.Serv
 
 	config := g.GetOauth2Config()
 
+	expiry, parseErr := time.Parse(time.DateTime, userToken.Expiry)
+
+	if parseErr != nil {
+		return nil, eris.Wrap(parseErr, "failed to parse token expiry time")
+	}
+
 	token := &oauth2.Token{
 		AccessToken:  userToken.AccessToken,
 		TokenType:    userToken.TokenType,
 		RefreshToken: userToken.RefreshToken,
-		Expiry:       time.Now(),
+		Expiry:       expiry,
 	}
 
 	client, newServiceErr := gmail.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
