@@ -3,8 +3,8 @@ package main
 import (
 	"database/sql"
 	"github.com/adriein/pingrate/internal/auth"
-	"github.com/adriein/pingrate/internal/gmail"
 	"github.com/adriein/pingrate/internal/health"
+	gmail2 "github.com/adriein/pingrate/internal/integration/gmail"
 	"github.com/adriein/pingrate/internal/pingrate"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/container"
@@ -52,14 +52,16 @@ func main() {
 	api.Route("GET /health", healthController())
 
 	// AUTH
-	api.Route("POST /sessions", loginController(app))
+	api.Route("POST /auth", loginController(app))
 
 	// USER
 	api.Route("POST /users", createUserController(app))
 
 	// INTEGRATIONS
-	api.Route("GET /integrations/gmail", googleIntegrationController(), middleware.Auth())
-	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(app))
+	api.Route("GET /integration/gmail/oauth", googleIntegrationController(), middleware.Auth())
+	api.Route("GET /integration/gmail/oauth-callback", googleOauthCallbackController(app))
+
+	//api.Route("GET /integration/gmail", googleIntegrationController(), middleware.Auth())
 
 	// GMAIL
 	api.Route("GET /gmail", googleGmailController(app), middleware.Auth())
@@ -95,9 +97,9 @@ func createUserController(app *pingrate.Pingrate) types.PingrateHttpHandler {
 }
 
 func googleIntegrationController() types.PingrateHttpHandler {
-	service := gmail.NewGoogleOauthService(external.NewGoogleApi())
+	service := gmail2.NewGoogleOauthService(external.NewGoogleApi())
 
-	controller := gmail.NewGoogleOauthController(service)
+	controller := gmail2.NewGoogleOauthController(service)
 
 	return controller.Handler
 }
@@ -106,9 +108,9 @@ func googleOauthCallbackController(app *pingrate.Pingrate) types.PingrateHttpHan
 	userRepository := app.Get(container.UserRepositoryInstanceKey).(repository.UserRepository)
 	googleIntegrationRepository := app.Get(container.GoogleIntegrationRepositoryInstanceKey).(repository.GoogleIntegrationRepository)
 
-	service := gmail.NewGoogleOauthCallbackService(userRepository, googleIntegrationRepository, external.NewGoogleApi())
+	service := gmail2.NewGoogleOauthCallbackService(userRepository, googleIntegrationRepository, external.NewGoogleApi())
 
-	controller := gmail.NewGoogleOauthCallbackController(service)
+	controller := gmail2.NewGoogleOauthCallbackController(service)
 
 	return controller.Handler
 }
@@ -116,9 +118,9 @@ func googleOauthCallbackController(app *pingrate.Pingrate) types.PingrateHttpHan
 func googleGmailController(app *pingrate.Pingrate) types.PingrateHttpHandler {
 	googleIntegrationRepository := app.Get(container.GoogleIntegrationRepositoryInstanceKey).(repository.GoogleIntegrationRepository)
 
-	service := gmail.NewGetGmailService(external.NewGoogleApi(), googleIntegrationRepository)
+	service := gmail2.NewGetGmailService(external.NewGoogleApi(), googleIntegrationRepository)
 
-	controller := gmail.NewGetGmailController(service)
+	controller := gmail2.NewGetGmailController(service)
 
 	return controller.Handler
 }

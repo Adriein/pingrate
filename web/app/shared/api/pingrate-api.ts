@@ -45,14 +45,14 @@ export type SigninForm = { email: string, password: string};
 export type SigninResponse = { ok: boolean, data: Record<string, string> | undefined, error: string | undefined }
 
 export const signin = async (payload: SigninForm): Promise<PingrateApiResponse<SigninResponse>> => {
-    return await post<SignupResponse>("/users/login", payload);
+    return await post<SignupResponse>("/auth", payload);
 };
 
 //INTEGRATIONS
 export type AskGmailPermissionsResponse = { ok: boolean, data: string, error: string | undefined }
 
 export const askGmailPermissions = async (sessionId: string): Promise<PingrateApiResponse<AskGmailPermissionsResponse>> => {
-    return await get("/integrations/gmail", { 'Cookie': `$session=${sessionId}` });
+    return await get("/integrations/gmail/oauth", { 'Cookie': `$session=${sessionId}` });
 };
 
 
