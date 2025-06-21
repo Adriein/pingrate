@@ -1,8 +1,9 @@
-package server
+package pingrate
 
 import (
 	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/shared/types"
@@ -12,34 +13,15 @@ import (
 	"net/http"
 )
 
-type PingrateApiServer struct {
-	address      string
-	router       *http.ServeMux
-	dependencies map[string]interface{}
+type HttpServer struct {
+	address   string
+	router    *http.ServeMux
+	container container.Container
 }
 
-func New(address string, container map[string]interface{}) (*PingrateApiServer, error) {
-	router := http.NewServeMux()
-
-	return &PingrateApiServer{
-		address:      address,
-		router:       router,
-		dependencies: container,
-	}, nil
-}
-
-func (s *PingrateApiServer) Start() {
+func (s *HttpServer) Start() {
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", s.router))
-
-	/*MuxMiddleWareChain := middleware.NewMiddlewareChain(
-		middleware.NewRequestTracingMiddleware,
-	)
-
-	server := http.Server{
-		Addr:    s.address,
-		Handler: MuxMiddleWareChain.ApplyOn(v1),
-	}*/
 
 	server := http.Server{
 		Addr:    s.address,
@@ -57,16 +39,19 @@ func (s *PingrateApiServer) Start() {
 	}
 }
 
-func (s *PingrateApiServer) Route(url string, handler types.PingrateHttpHandler, middlewares ...types.Middleware) {
-	s.router.Handle(url, s.newHandler(handler, middlewares...))
+func (s *HttpServer) Route(url string, handler types.PingrateHttpHandler, middlewares ...types.Middleware) {
+	s.router.Handle(url, s.httpHandler(handler, middlewares...))
 }
 
-func (s *PingrateApiServer) newHandler(handler types.PingrateHttpHandler, middlewares ...types.Middleware) http.HandlerFunc {
+func (s *HttpServer) httpHandler(handler types.PingrateHttpHandler, middlewares ...types.Middleware) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		data := make(map[string]interface{})
+		data[container.ContainerInstanceKey] = s.container
+
 		ctx := &types.Ctx{
 			Res:  w,
 			Req:  r,
-			Data: s.dependencies,
+			Data: data,
 		}
 
 		if len(middlewares) == 0 {
@@ -103,8 +88,4 @@ func (s *PingrateApiServer) newHandler(handler types.PingrateHttpHandler, middle
 			}
 		}
 	}
-}
-
-func (s *PingrateApiServer) Get(name string) interface{} {
-	return s.dependencies[name]
 }

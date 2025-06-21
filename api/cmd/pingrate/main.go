@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/adriein/pingrate/internal/gmail"
 	"github.com/adriein/pingrate/internal/health"
-	"github.com/adriein/pingrate/internal/server"
+	"github.com/adriein/pingrate/internal/pingrate"
 	"github.com/adriein/pingrate/internal/session"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/container"
@@ -41,15 +41,11 @@ func main() {
 		log.Fatal(envCheckerErr.Error())
 	}
 
-	depContainer := container.New()
+	app := pingrate.New(os.Getenv(constants.ServerPort))
 
-	api, newServerErr := server.New(os.Getenv(constants.ServerPort), depContainer)
+	api := app.GetHttpServer()
 
-	if newServerErr != nil {
-		log.Fatal(newServerErr.Error())
-	}
-
-	database := depContainer[container.DatabaseInstance].(*sql.DB)
+	database := app.Get(container.DatabaseInstanceKey).(*sql.DB)
 
 	defer database.Close()
 
@@ -59,15 +55,15 @@ func main() {
 	api.Route("POST /sessions", createSessionController())
 
 	// USER
-	api.Route("POST /users", createUserController(depContainer))
-	api.Route("POST /users/login", loginUserController(depContainer))
+	api.Route("POST /users", createUserController(app))
+	api.Route("POST /users/login", loginUserController(app))
 
 	// INTEGRATIONS
 	api.Route("GET /integrations/gmail", googleIntegrationController(), middleware.Auth())
-	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(depContainer))
+	api.Route("GET /integrations/gmail/oauth-callback", googleOauthCallbackController(app))
 
 	// GMAIL
-	api.Route("GET /gmail", googleGmailController(depContainer), middleware.Auth())
+	api.Route("GET /gmail", googleGmailController(app), middleware.Auth())
 
 	api.Start()
 }
@@ -86,9 +82,9 @@ func createSessionController() types.PingrateHttpHandler {
 	return controller.Handler
 }
 
-func loginUserController(dep container.DependencyContainer) types.PingrateHttpHandler {
-	userRepository := dep[container.UserRepositoryInstance].(repository.UserRepository)
-	sessionRepository := dep[container.SessionRepositoryInstance].(repository.SessionRepository)
+func loginUserController(app *pingrate.Pingrate) types.PingrateHttpHandler {
+	userRepository := app.Get(container.UserRepositoryInstanceKey).(repository.UserRepository)
+	sessionRepository := app.Get(container.SessionRepositoryInstanceKey).(repository.SessionRepository)
 
 	service := user.NewLoginUserService(userRepository, sessionRepository)
 
@@ -97,8 +93,8 @@ func loginUserController(dep container.DependencyContainer) types.PingrateHttpHa
 	return controller.Handler
 }
 
-func createUserController(dep container.DependencyContainer) types.PingrateHttpHandler {
-	userRepository := dep[container.UserRepositoryInstance].(repository.UserRepository)
+func createUserController(app *pingrate.Pingrate) types.PingrateHttpHandler {
+	userRepository := app.Get(container.UserRepositoryInstanceKey).(repository.UserRepository)
 
 	service := user.NewCreateUserService(userRepository)
 
@@ -115,9 +111,9 @@ func googleIntegrationController() types.PingrateHttpHandler {
 	return controller.Handler
 }
 
-func googleOauthCallbackController(dep container.DependencyContainer) types.PingrateHttpHandler {
-	userRepository := dep[container.UserRepositoryInstance].(repository.UserRepository)
-	googleIntegrationRepository := dep[container.GoogleIntegrationRepositoryInstance].(repository.GoogleIntegrationRepository)
+func googleOauthCallbackController(app *pingrate.Pingrate) types.PingrateHttpHandler {
+	userRepository := app.Get(container.UserRepositoryInstanceKey).(repository.UserRepository)
+	googleIntegrationRepository := app.Get(container.GoogleIntegrationRepositoryInstanceKey).(repository.GoogleIntegrationRepository)
 
 	service := gmail.NewGoogleOauthCallbackService(userRepository, googleIntegrationRepository, external.NewGoogleApi())
 
@@ -126,8 +122,8 @@ func googleOauthCallbackController(dep container.DependencyContainer) types.Ping
 	return controller.Handler
 }
 
-func googleGmailController(dep container.DependencyContainer) types.PingrateHttpHandler {
-	googleIntegrationRepository := dep[container.GoogleIntegrationRepositoryInstance].(repository.GoogleIntegrationRepository)
+func googleGmailController(app *pingrate.Pingrate) types.PingrateHttpHandler {
+	googleIntegrationRepository := app.Get(container.GoogleIntegrationRepositoryInstanceKey).(repository.GoogleIntegrationRepository)
 
 	service := gmail.NewGetGmailService(external.NewGoogleApi(), googleIntegrationRepository)
 

@@ -9,22 +9,28 @@ import (
 	"os"
 )
 
-const DatabaseInstance = "database"
-const UserRepositoryInstance = "user_repository"
-const SessionRepositoryInstance = "session_repository"
-const GoogleIntegrationRepositoryInstance = "google_integration_repository"
+const (
+	ContainerInstanceKey = "container"
+)
 
-type DependencyContainer map[string]interface{}
+const (
+	DatabaseInstanceKey                    = "database"
+	UserRepositoryInstanceKey              = "user_repository"
+	SessionRepositoryInstanceKey           = "session_repository"
+	GoogleIntegrationRepositoryInstanceKey = "google_integration_repository"
+)
 
-func New() DependencyContainer {
+type Container map[string]interface{}
+
+func New() Container {
 	container := make(map[string]interface{})
 
 	database := initDatabase()
 
-	container[DatabaseInstance] = database
-	container[UserRepositoryInstance] = repository.NewPgUserRepository(database)
-	container[SessionRepositoryInstance] = repository.NewPgSessionRepository(database)
-	container[GoogleIntegrationRepositoryInstance] = repository.NewPgGoogleIntegrationRepository(database)
+	container[DatabaseInstanceKey] = database
+	container[UserRepositoryInstanceKey] = repository.NewPgUserRepository(database)
+	container[SessionRepositoryInstanceKey] = repository.NewPgSessionRepository(database)
+	container[GoogleIntegrationRepositoryInstanceKey] = repository.NewPgGoogleIntegrationRepository(database)
 
 	return container
 }
@@ -44,4 +50,8 @@ func initDatabase() *sql.DB {
 	}
 
 	return database
+}
+
+func (c Container) Get(instance string) interface{} {
+	return c[instance]
 }

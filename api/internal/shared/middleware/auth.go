@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/helper"
 	"github.com/adriein/pingrate/internal/shared/repository"
 	"github.com/adriein/pingrate/internal/shared/types"
+	"github.com/rotisserie/eris"
 	"net/http"
 )
 
@@ -18,10 +18,16 @@ func Auth() types.Middleware {
 		return func(ctx *types.Ctx) error {
 			r, w := ctx.Req, ctx.Res
 
-			sessionRepository, ok := ctx.Data[container.SessionRepositoryInstance].(repository.SessionRepository)
+			con, ok := ctx.Data[container.ContainerInstanceKey].(container.Container)
 
 			if !ok {
-				return fmt.Errorf("user repository not found")
+				return eris.New("Container not found")
+			}
+
+			sessionRepository, ok := con.Get(container.SessionRepositoryInstanceKey).(repository.SessionRepository)
+
+			if !ok {
+				return eris.New("Session repository not found")
 			}
 
 			cookie, cookieErr := r.Cookie("$session")
