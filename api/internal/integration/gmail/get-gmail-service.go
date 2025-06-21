@@ -37,10 +37,10 @@ func (s *GetGmailService) Execute(userEmail string) error {
 		return gmailClientErr
 	}
 
-	response, err := gmailClient.Users.Messages.List("me").Q("after:2012/01/01 before:2012/02/01").Do()
+	response, getMessagesErr := gmailClient.Users.Messages.List("me").Q("after:2012/01/01 before:2012/02/01").Do()
 
-	if err != nil {
-		return err
+	if getMessagesErr != nil {
+		return getMessagesErr
 	}
 
 	for _, message := range response.Messages {
