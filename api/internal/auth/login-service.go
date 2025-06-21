@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"github.com/adriein/pingrate/internal/shared/repository"
@@ -7,22 +7,22 @@ import (
 	"time"
 )
 
-type LoginUserService struct {
+type LoginService struct {
 	userRepository    repository.UserRepository
 	sessionRepository repository.SessionRepository
 }
 
-func NewLoginUserService(
+func NewLoginService(
 	userRepository repository.UserRepository,
 	sessionRepository repository.SessionRepository,
-) *LoginUserService {
-	return &LoginUserService{
+) *LoginService {
+	return &LoginService{
 		userRepository:    userRepository,
 		sessionRepository: sessionRepository,
 	}
 }
 
-func (s *LoginUserService) Execute(email string, inputPassword string) (*types.Session, error) {
+func (s *LoginService) Execute(email string, inputPassword string) (*types.Session, error) {
 	criteria := types.NewCriteria().Equal("us_email", email)
 
 	user, findOneErr := s.userRepository.FindOne(criteria)

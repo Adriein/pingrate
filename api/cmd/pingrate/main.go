@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"github.com/adriein/pingrate/internal/auth"
 	"github.com/adriein/pingrate/internal/gmail"
 	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/pingrate"
-	"github.com/adriein/pingrate/internal/session"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/container"
 	"github.com/adriein/pingrate/internal/shared/external"
@@ -51,12 +51,11 @@ func main() {
 
 	api.Route("GET /health", healthController())
 
-	// SESSION
-	api.Route("POST /sessions", createSessionController())
+	// AUTH
+	api.Route("POST /sessions", loginController(app))
 
 	// USER
 	api.Route("POST /users", createUserController(app))
-	api.Route("POST /users/login", loginUserController(app))
 
 	// INTEGRATIONS
 	api.Route("GET /integrations/gmail", googleIntegrationController(), middleware.Auth())
@@ -74,21 +73,13 @@ func healthController() types.PingrateHttpHandler {
 	return controller.Handler
 }
 
-func createSessionController() types.PingrateHttpHandler {
-	service := session.NewCreateSessionService()
-
-	controller := session.NewCreateUserController(service)
-
-	return controller.Handler
-}
-
-func loginUserController(app *pingrate.Pingrate) types.PingrateHttpHandler {
+func loginController(app *pingrate.Pingrate) types.PingrateHttpHandler {
 	userRepository := app.Get(container.UserRepositoryInstanceKey).(repository.UserRepository)
 	sessionRepository := app.Get(container.SessionRepositoryInstanceKey).(repository.SessionRepository)
 
-	service := user.NewLoginUserService(userRepository, sessionRepository)
+	service := auth.NewLoginService(userRepository, sessionRepository)
 
-	controller := user.NewLoginUserController(service)
+	controller := auth.NewLoginController(service)
 
 	return controller.Handler
 }
