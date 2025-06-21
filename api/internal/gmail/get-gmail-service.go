@@ -50,7 +50,9 @@ func (s *GetGmailService) Execute(userEmail string) error {
 			return getMessageErr
 		}
 
-		fmt.Println(fullMessage.Payload.Headers)
+		a, _ := types.GmailFromMessage(fullMessage)
+
+		fmt.Println(a)
 	}
 
 	fmt.Println(response.Messages)
