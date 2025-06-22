@@ -24,7 +24,11 @@ func NewPgUserRepository(connection *sql.DB) *PgUserRepository {
 }
 
 func (r *PgUserRepository) FindByEmail(email string) (*User, error) {
-	query := "SELECT * FROM pi_user WHERE us_email = $1;"
+	statement, err := r.connection.Prepare("SELECT * FROM pi_user WHERE us_email = $1;")
+
+	if err != nil {
+		return nil, eris.New(err.Error())
+	}
 
 	var (
 		us_id         string
@@ -34,7 +38,7 @@ func (r *PgUserRepository) FindByEmail(email string) (*User, error) {
 		us_updated_at string
 	)
 
-	if scanErr := r.connection.QueryRow(query).Scan(
+	if scanErr := statement.QueryRow(email).Scan(
 		&us_id,
 		&us_email,
 		&us_password,

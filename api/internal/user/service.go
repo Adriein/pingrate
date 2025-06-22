@@ -1,6 +1,9 @@
 package user
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Service struct {
 	repository UserRepository
@@ -29,6 +32,10 @@ func (s *Service) CreateUser(request CreateUserRequest) error {
 
 	if findOneErr == nil {
 		return UserAlreadyExistError
+	}
+
+	if !errors.Is(findOneErr, UserNotFoundError) {
+		return findOneErr
 	}
 
 	if err := s.repository.Save(user); err != nil {

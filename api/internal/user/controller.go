@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
@@ -33,7 +34,12 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 		}
 
 		if err := ctrl.service.CreateUser(json); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			if errors.Is(err, UserAlreadyExistError) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusInternalServerError, gin.H{})
 		}
 	}
 }
