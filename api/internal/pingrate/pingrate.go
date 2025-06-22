@@ -1,35 +1,44 @@
 package pingrate
 
 import (
-	"github.com/adriein/pingrate/internal/shared/container"
-	"net/http"
+	"github.com/adriein/pingrate/internal/healthcheck"
+	"github.com/adriein/pingrate/internal/user"
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"github.com/rotisserie/eris"
+	"log"
+	"log/slog"
 )
 
 type Pingrate struct {
-	api       *HttpServer
-	container container.Container
+	router    *gin.RouterGroup
+	validator *validator.Validate
 }
 
-func New(address string) *Pingrate {
-	router := http.NewServeMux()
-	cont := container.New()
+func New(port string) *Pingrate {
+	engine := gin.Default()
+	router := engine.Group("/api/v1")
 
-	httpServer := &HttpServer{
-		address:   address,
+	app := &Pingrate{
 		router:    router,
-		container: cont,
+		validator: validator.New(),
 	}
 
-	return &Pingrate{
-		api:       httpServer,
-		container: cont,
+	app.routeSetup()
+
+	if ginErr := engine.Run(port); ginErr != nil {
+		pingrateErr := eris.Wrap(ginErr, "Error starting HTTP server")
+
+		log.Fatal(eris.ToString(pingrateErr, true))
 	}
+
+	slog.Info("Starting the PingrateApiServer at " + port)
+
+	return app
 }
 
-func (p *Pingrate) Get(instance string) interface{} {
-	return p.container.Get(instance)
-}
+func (p *Pingrate) routeSetup() {
+	p.router.GET("/ping", healthcheck.NewController().Get())
 
-func (p *Pingrate) GetHttpServer() *HttpServer {
-	return p.api
+	p.router.POST("/users", user.NewController(p.validator).Post())
 }
