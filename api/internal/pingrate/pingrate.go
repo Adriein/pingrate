@@ -1,16 +1,21 @@
 package pingrate
 
 import (
+	"database/sql"
+	"fmt"
 	"github.com/adriein/pingrate/internal/healthcheck"
+	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/rotisserie/eris"
 	"log"
 	"log/slog"
+	"os"
 )
 
 type Pingrate struct {
+	database  *sql.DB
 	router    *gin.RouterGroup
 	validator *validator.Validate
 }
@@ -20,6 +25,7 @@ func New(port string) *Pingrate {
 	router := engine.Group("/api/v1")
 
 	app := &Pingrate{
+		database:  initDatabase(),
 		router:    router,
 		validator: validator.New(),
 	}
@@ -37,8 +43,35 @@ func New(port string) *Pingrate {
 	return app
 }
 
+func initDatabase() *sql.DB {
+	databaseDsn := fmt.Sprintf(
+		"postgresql://%s:%s@localhost:5432/%s?sslmode=disable",
+		os.Getenv(constants.DatabaseUser),
+		os.Getenv(constants.DatabasePassword),
+		os.Getenv(constants.DatabaseName),
+	)
+
+	database, dbConnErr := sql.Open("postgres", databaseDsn)
+
+	if dbConnErr != nil {
+		log.Fatal(dbConnErr.Error())
+	}
+
+	return database
+}
+
 func (p *Pingrate) routeSetup() {
 	p.router.GET("/ping", healthcheck.NewController().Get())
 
-	p.router.POST("/users", user.NewController(p.validator).Post())
+	p.router.POST("/users", p.createUser())
+}
+
+func (p *Pingrate) createUser() gin.HandlerFunc {
+	repository := user.NewPgUserRepository(p.database)
+	service := user.NewService(repository)
+
+	return user.NewController(
+		p.validator,
+		service,
+	).Post()
 }

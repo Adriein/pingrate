@@ -6,19 +6,15 @@ import (
 	"net/http"
 )
 
-type CreateUserRequest struct {
-	Id       string `json:"id" validate:"uuid4" binding:"required"`
-	Email    string `json:"email" validate:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 type Controller struct {
 	validator *validator.Validate
+	service   *Service
 }
 
-func NewController(validator *validator.Validate) *Controller {
+func NewController(validator *validator.Validate, service *Service) *Controller {
 	return &Controller{
 		validator: validator,
+		service:   service,
 	}
 }
 
@@ -33,6 +29,11 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 
 		if err := ctrl.validator.Struct(json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := ctrl.service.CreateUser(json); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 	}
 }
