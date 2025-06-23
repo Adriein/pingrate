@@ -15,7 +15,7 @@ func NewService(repository UserRepository) *Service {
 	}
 }
 
-func (s *Service) CreateUser(request CreateUserRequest) error {
+func (s *Service) CreateUser(request *CreateUserRequest) error {
 	user := &User{
 		Id:        request.Id,
 		Email:     request.Email,

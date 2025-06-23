@@ -3,7 +3,7 @@ package pingrate
 import (
 	"database/sql"
 	"fmt"
-	"github.com/adriein/pingrate/internal/healthcheck"
+	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/user"
 	"github.com/gin-gonic/gin"
@@ -61,7 +61,7 @@ func initDatabase() *sql.DB {
 }
 
 func (p *Pingrate) routeSetup() {
-	p.router.GET("/ping", healthcheck.NewController().Get())
+	p.router.GET("/ping", health.NewController().Get())
 
 	p.router.POST("/users", p.createUser())
 }

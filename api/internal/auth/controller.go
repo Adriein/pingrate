@@ -1,7 +1,6 @@
-package user
+package auth
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
@@ -21,7 +20,7 @@ func NewController(validator *validator.Validate, service *Service) *Controller 
 
 func (ctrl *Controller) Post() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var json CreateUserRequest
+		var json LoginRequest
 
 		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -33,13 +32,23 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 			return
 		}
 
-		if err := ctrl.service.CreateUser(&json); err != nil {
-			if errors.Is(err, UserAlreadyExistError) {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
+		session, err := ctrl.service.CreateSession(&json)
 
-			c.JSON(http.StatusInternalServerError, gin.H{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
+
+		c.SetCookie(
+			"$session",
+			session.Id,
+			3600,
+			"/",
+			"localhost",
+			false,
+			true,
+		)
+
+		c.JSON(http.StatusOK, gin.H{})
 	}
 }
