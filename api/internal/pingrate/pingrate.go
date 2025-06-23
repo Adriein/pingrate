@@ -3,6 +3,7 @@ package pingrate
 import (
 	"database/sql"
 	"fmt"
+	"github.com/adriein/pingrate/internal/auth"
 	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/user"
@@ -61,8 +62,13 @@ func initDatabase() *sql.DB {
 }
 
 func (p *Pingrate) routeSetup() {
+	//HEALTH CHECK
 	p.router.GET("/ping", health.NewController().Get())
 
+	//AUTH
+	p.router.POST("/auth", p.createSession())
+
+	//USERS
 	p.router.POST("/users", p.createUser())
 }
 
@@ -71,6 +77,18 @@ func (p *Pingrate) createUser() gin.HandlerFunc {
 	service := user.NewService(repository)
 
 	return user.NewController(
+		p.validator,
+		service,
+	).Post()
+}
+
+func (p *Pingrate) createSession() gin.HandlerFunc {
+	sessionRepository := auth.NewPgSessionRepository(p.database)
+	userRepository := user.NewPgUserRepository(p.database)
+
+	service := auth.NewService(sessionRepository, userRepository)
+
+	return auth.NewController(
 		p.validator,
 		service,
 	).Post()
