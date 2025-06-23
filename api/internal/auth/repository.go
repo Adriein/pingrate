@@ -8,6 +8,7 @@ import (
 )
 
 type SessionRepository interface {
+	FindById(id string) (*Session, error)
 	FindByEmail(email string) (*Session, error)
 	Save(entity *Session) error
 	Update(entity *Session) error
@@ -21,6 +22,41 @@ func NewPgSessionRepository(connection *sql.DB) *PgSessionRepository {
 	return &PgSessionRepository{
 		connection: connection,
 	}
+}
+
+func (r *PgSessionRepository) FindById(id string) (*Session, error) {
+	statement, err := r.connection.Prepare("SELECT * FROM pi_session WHERE se_id = $1;")
+
+	if err != nil {
+		return nil, eris.New(err.Error())
+	}
+
+	var (
+		se_id         string
+		se_email      string
+		se_created_at string
+		se_updated_at string
+	)
+
+	if scanErr := statement.QueryRow(id).Scan(
+		&se_id,
+		&se_email,
+		&se_created_at,
+		&se_updated_at,
+	); scanErr != nil {
+		if errors.Is(scanErr, sql.ErrNoRows) {
+			return nil, eris.Wrap(SessionNotFoundError, "")
+		}
+
+		return nil, eris.New(scanErr.Error())
+	}
+
+	return &Session{
+		Id:        se_id,
+		Email:     se_email,
+		CreatedAt: se_created_at,
+		UpdatedAt: se_updated_at,
+	}, nil
 }
 
 func (r *PgSessionRepository) FindByEmail(email string) (*Session, error) {

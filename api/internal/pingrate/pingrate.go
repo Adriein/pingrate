@@ -6,6 +6,7 @@ import (
 	"github.com/adriein/pingrate/internal/auth"
 	"github.com/adriein/pingrate/internal/health"
 	"github.com/adriein/pingrate/internal/shared/constants"
+	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -70,6 +71,9 @@ func (p *Pingrate) routeSetup() {
 
 	//USERS
 	p.router.POST("/users", p.createUser())
+
+	//Integrations
+	p.router.GET("/integrations/gmail", p.auth(), health.NewController().Get())
 }
 
 func (p *Pingrate) createUser() gin.HandlerFunc {
@@ -92,4 +96,10 @@ func (p *Pingrate) createSession() gin.HandlerFunc {
 		p.validator,
 		service,
 	).Post()
+}
+
+func (p *Pingrate) auth() gin.HandlerFunc {
+	sessionRepository := auth.NewPgSessionRepository(p.database)
+
+	return middleware.Auth(sessionRepository)
 }
