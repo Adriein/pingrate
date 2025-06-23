@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"errors"
+	"github.com/adriein/pingrate/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
@@ -35,6 +37,11 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 		session, err := ctrl.service.CreateSession(&json)
 
 		if err != nil {
+			if errors.Is(err, user.UserIncorrectPasswordError) || errors.Is(err, user.UserNotFoundError) {
+				c.Status(http.StatusUnauthorized)
+				return
+			}
+
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -49,6 +56,6 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 			true,
 		)
 
-		c.JSON(http.StatusOK, gin.H{})
+		c.Status(http.StatusOK)
 	}
 }

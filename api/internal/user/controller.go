@@ -39,7 +39,7 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 				return
 			}
 
-			c.JSON(http.StatusInternalServerError, gin.H{})
+			c.Status(http.StatusInternalServerError)
 		}
 	}
 }
