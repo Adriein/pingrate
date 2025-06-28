@@ -3,6 +3,7 @@ package gmail
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/rotisserie/eris"
 	"strings"
 )
@@ -100,9 +101,10 @@ func (r *PgGoogleTokenRepository) Update(entity *GoogleToken) error {
 	var query strings.Builder
 
 	query.WriteString(`UPDATE pi_google_integration SET `)
-	query.WriteString(`gi_user_email = $1, gi_google_access_token = $2, gi_google_token_type = $3, gi_google_refresh_token = $4, gi_google_token_expiry = $5 gi_updated_at = $6 `)
+	query.WriteString(`gi_user_email = $1, gi_google_access_token = $2, gi_google_token_type = $3, gi_google_refresh_token = $4, gi_google_token_expiry = $5, gi_updated_at = $6 `)
 	query.WriteString(`WHERE gi_id = $7;`)
 
+	fmt.Println(query.String())
 	_, err := r.connection.Exec(
 		query.String(),
 		entity.UserEmail,

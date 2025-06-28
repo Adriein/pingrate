@@ -3,11 +3,10 @@ package middleware
 import (
 	"errors"
 	"github.com/adriein/pingrate/internal/auth"
+	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
-
-const SessionContextKey = "session"
 
 func Auth(repository auth.SessionRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -35,7 +34,7 @@ func Auth(repository auth.SessionRepository) gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set(SessionContextKey, session.Email)
+		ctx.Set(constants.SessionContextKey, session.Email)
 
 		ctx.Next()
 	}

@@ -32,7 +32,7 @@ func (g *GoogleApi) GetOauth2Config() *oauth2.Config {
 func (g *GoogleApi) GetAuthCodeUrlForUser(userEmail string) string {
 	config := g.GetOauth2Config()
 
-	return config.AuthCodeURL(userEmail, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(userEmail))
+	return config.AuthCodeURL(userEmail, oauth2.AccessTypeOffline, oauth2.ApprovalForce, oauth2.S256ChallengeOption(userEmail))
 }
 
 func (g *GoogleApi) ExchangeToken(state string, code string) (*GoogleToken, error) {

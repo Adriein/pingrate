@@ -4,10 +4,10 @@ import "errors"
 
 type Service struct {
 	repository GoogleTokenRepository
-	googleApi  GoogleApi
+	googleApi  *GoogleApi
 }
 
-func NewService(repository GoogleTokenRepository, googleApi GoogleApi) *Service {
+func NewService(repository GoogleTokenRepository, googleApi *GoogleApi) *Service {
 	return &Service{
 		repository: repository,
 		googleApi:  googleApi,

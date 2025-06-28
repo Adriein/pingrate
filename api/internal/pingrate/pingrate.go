@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/adriein/pingrate/internal/auth"
 	"github.com/adriein/pingrate/internal/health"
+	"github.com/adriein/pingrate/internal/integration/gmail"
 	"github.com/adriein/pingrate/internal/shared/constants"
 	"github.com/adriein/pingrate/internal/shared/middleware"
 	"github.com/adriein/pingrate/internal/user"
@@ -72,8 +73,11 @@ func (p *Pingrate) routeSetup() {
 	//USERS
 	p.router.POST("/users", p.createUser())
 
-	//Integrations
-	p.router.GET("/integrations/gmail", p.auth(), health.NewController().Get())
+	//GMAIL INTEGRATION
+	gmailController := p.gmailController()
+
+	p.router.GET("/integrations/gmail/oauth", p.auth(), gmailController.GetOauthLink())
+	p.router.GET("/integrations/gmail/oauth-callback", p.auth(), gmailController.PostGoogleOauthCallback())
 }
 
 func (p *Pingrate) createUser() gin.HandlerFunc {
@@ -96,6 +100,15 @@ func (p *Pingrate) createSession() gin.HandlerFunc {
 		p.validator,
 		service,
 	).Post()
+}
+
+func (p *Pingrate) gmailController() *gmail.Controller {
+	googleApi := gmail.NewGoogleApi()
+	tokenRepository := gmail.NewPgGoogleTokenRepository(p.database)
+
+	service := gmail.NewService(tokenRepository, googleApi)
+
+	return gmail.NewController(service)
 }
 
 func (p *Pingrate) auth() gin.HandlerFunc {
