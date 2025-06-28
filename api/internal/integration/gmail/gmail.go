@@ -37,5 +37,24 @@ func NewMail(message *gmail.Message) (*Gmail, error) {
 		}, nil
 	}
 
+	if message.Payload.MimeType == "multipart/alternative" {
+		body := ""
+		for _, part := range message.Payload.Parts {
+			if part.MimeType == "text/plain" {
+				byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(part.Body.Data)
+
+				if decodeBase64Err != nil {
+					return nil, eris.New(decodeBase64Err.Error())
+				}
+
+				body += "\n" + string(byteMessageBody)
+			}
+		}
+
+		return &Gmail{
+			Body: body,
+		}, nil
+	}
+
 	return nil, nil
 }

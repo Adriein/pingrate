@@ -103,9 +103,13 @@ func (s *Service) GetGmailInbox(email string) error {
 			return mailErr
 		}
 
-		fmt.Println(mail)
+		if mail == nil {
+			continue
+		}
+
+		fmt.Println(mail.Body)
+		fmt.Println("----------------------------------------------------------------------------------------------")
 	}
 
-	fmt.Println(response.Messages)
 	return nil
 }
