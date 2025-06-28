@@ -56,7 +56,7 @@ func (ctrl *Controller) GetGmail() gin.HandlerFunc {
 			return
 		}
 
-		link := ctrl.service.GetGmailOauthLink(email.(string))
+		link := ctrl.service.GetGmailInbox(email.(string))
 
 		ctx.JSON(http.StatusOK, gin.H{
 			"data": link,
