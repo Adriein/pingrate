@@ -1,4 +1,4 @@
-package types
+package gmail
 
 import (
 	"encoding/base64"
@@ -6,6 +6,20 @@ import (
 	"google.golang.org/api/gmail/v1"
 )
 
+var (
+	GoogleTokenNotFoundError = eris.New("google token not found")
+)
+
+type GoogleToken struct {
+	Id           string
+	UserEmail    string
+	AccessToken  string
+	TokenType    string
+	RefreshToken string
+	Expiry       string
+	CreatedAt    string
+	UpdatedAt    string
+}
 type Gmail struct {
 	Body string
 }

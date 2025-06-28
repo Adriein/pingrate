@@ -1,4 +1,4 @@
-package types
+package user
 
 import (
 	"crypto/rand"
@@ -14,6 +14,12 @@ var (
 	UserNotFoundError          = eris.New("user not found")
 	UserIncorrectPasswordError = eris.New("password incorrect")
 )
+
+type CreateUserRequest struct {
+	Id       string `json:"id" validate:"uuid4" binding:"required"`
+	Email    string `json:"email" validate:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
 
 type User struct {
 	Id        string `json:"id"`

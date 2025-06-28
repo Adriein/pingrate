@@ -1,9 +1,8 @@
-package external
+package gmail
 
 import (
 	"context"
 	"github.com/adriein/pingrate/internal/shared/constants"
-	"github.com/adriein/pingrate/internal/shared/types"
 	"github.com/google/uuid"
 	"github.com/rotisserie/eris"
 	"golang.org/x/oauth2"
@@ -33,10 +32,10 @@ func (g *GoogleApi) GetOauth2Config() *oauth2.Config {
 func (g *GoogleApi) GetAuthCodeUrlForUser(userEmail string) string {
 	config := g.GetOauth2Config()
 
-	return config.AuthCodeURL(userEmail, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(userEmail))
+	return config.AuthCodeURL(userEmail, oauth2.AccessTypeOffline, oauth2.ApprovalForce, oauth2.S256ChallengeOption(userEmail))
 }
 
-func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleIntegration, error) {
+func (g *GoogleApi) ExchangeToken(state string, code string) (*GoogleToken, error) {
 	ctx := context.Background()
 	config := g.GetOauth2Config()
 
@@ -46,7 +45,7 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleInteg
 		return nil, eris.New(exchangeErr.Error())
 	}
 
-	googleToken := &types.GoogleIntegration{
+	googleToken := &GoogleToken{
 		Id:           uuid.New().String(),
 		UserEmail:    state,
 		AccessToken:  token.AccessToken,
@@ -60,7 +59,7 @@ func (g *GoogleApi) ExchangeToken(state string, code string) (*types.GoogleInteg
 	return googleToken, nil
 }
 
-func (g *GoogleApi) GmailClient(userToken *types.GoogleIntegration) (*gmail.Service, error) {
+func (g *GoogleApi) GmailClient(userToken *GoogleToken) (*gmail.Service, error) {
 	ctx := context.Background()
 
 	config := g.GetOauth2Config()

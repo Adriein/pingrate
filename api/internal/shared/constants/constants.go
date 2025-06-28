@@ -31,3 +31,7 @@ const (
 	MissingSessionCookie = "MISSING_SESSION_COOKIE"
 	InvalidSession       = "INVALID_SESSION"
 )
+
+const (
+	SessionContextKey = "SESSION"
+)
