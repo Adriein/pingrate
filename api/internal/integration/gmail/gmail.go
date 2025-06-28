@@ -24,7 +24,7 @@ type Gmail struct {
 	Body string
 }
 
-func GmailFromMessage(message *gmail.Message) (*Gmail, error) {
+func NewMail(message *gmail.Message) (*Gmail, error) {
 	if message.Payload.MimeType == "text/plain" {
 		byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(message.Payload.Body.Data)
 

@@ -97,9 +97,13 @@ func (s *Service) GetGmailInbox(email string) error {
 			return getMessageErr
 		}
 
-		a, _ := GmailFromMessage(fullMessage)
+		mail, mailErr := NewMail(fullMessage)
 
-		fmt.Println(a)
+		if mailErr != nil {
+			return mailErr
+		}
+
+		fmt.Println(mail)
 	}
 
 	fmt.Println(response.Messages)
