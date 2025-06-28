@@ -46,3 +46,20 @@ func (ctrl *Controller) PostGoogleOauthCallback() gin.HandlerFunc {
 		ctx.Redirect(http.StatusFound, "http://localhost:5173/dashboard")
 	}
 }
+
+func (ctrl *Controller) GetGmail() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		email, ok := ctx.Get(constants.SessionContextKey)
+
+		if !ok {
+			ctx.Status(http.StatusUnauthorized)
+			return
+		}
+
+		link := ctrl.service.GetGmailOauthLink(email.(string))
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"data": link,
+		})
+	}
+}

@@ -78,6 +78,8 @@ func (p *Pingrate) routeSetup() {
 
 	p.router.GET("/integrations/gmail/oauth", p.auth(), gmailController.GetOauthLink())
 	p.router.GET("/integrations/gmail/oauth-callback", p.auth(), gmailController.PostGoogleOauthCallback())
+
+	p.router.GET("/integrations/gmail", p.auth(), gmailController.PostGoogleOauthCallback())
 }
 
 func (p *Pingrate) createUser() gin.HandlerFunc {

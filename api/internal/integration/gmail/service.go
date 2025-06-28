@@ -1,6 +1,9 @@
 package gmail
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type Service struct {
 	repository GoogleTokenRepository
@@ -62,5 +65,43 @@ func (s *Service) ExchangeGoogleToken(email string, code string) error {
 		return updateErr
 	}
 
+	return nil
+}
+
+func (s *Service) GetGmailInbox(email string) error {
+	token, tokenFindOneErr := s.repository.FindByEmail(email)
+
+	if tokenFindOneErr != nil {
+		return tokenFindOneErr
+	}
+
+	gmailClient, gmailClientErr := s.googleApi.GmailClient(token)
+
+	if gmailClientErr != nil {
+		return gmailClientErr
+	}
+
+	response, getMessagesErr := gmailClient.Users.Messages.
+		List("me").
+		Q("after:2012/01/01 before:2012/02/01").
+		Do()
+
+	if getMessagesErr != nil {
+		return getMessagesErr
+	}
+
+	for _, message := range response.Messages {
+		fullMessage, getMessageErr := gmailClient.Users.Messages.Get("me", message.Id).Do()
+
+		if getMessageErr != nil {
+			return getMessageErr
+		}
+
+		a, _ := GmailFromMessage(fullMessage)
+
+		fmt.Println(a)
+	}
+
+	fmt.Println(response.Messages)
 	return nil
 }
