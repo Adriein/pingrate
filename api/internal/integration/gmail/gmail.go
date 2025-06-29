@@ -37,24 +37,38 @@ func NewMail(message *gmail.Message) (*Gmail, error) {
 		}, nil
 	}
 
-	if message.Payload.MimeType == "multipart/alternative" {
-		body := ""
-		for _, part := range message.Payload.Parts {
-			if part.MimeType == "text/plain" {
-				byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(part.Body.Data)
+	decodedBody, decodeMultipartBodyErr := decodeMultipartBody(message)
 
-				if decodeBase64Err != nil {
-					return nil, eris.New(decodeBase64Err.Error())
-				}
-
-				body += "\n" + string(byteMessageBody)
-			}
-		}
-
-		return &Gmail{
-			Body: body,
-		}, nil
+	if decodeMultipartBodyErr != nil {
+		return nil, decodeMultipartBodyErr
 	}
 
-	return nil, nil
+	return &Gmail{Body: *decodedBody}, nil
+}
+
+func decodeMultipartBody(message *gmail.Message) (*string, error) {
+	var queue []*gmail.MessagePart
+	var result string
+
+	queue = append(queue, message.Payload.Parts...)
+
+	for len(queue) > 0 {
+		part := queue[0]
+
+		if part.MimeType == "text/plain" {
+			byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(part.Body.Data)
+
+			if decodeBase64Err != nil {
+				return nil, eris.New(decodeBase64Err.Error())
+			}
+
+			result += "\n" + string(byteMessageBody)
+
+			continue
+		}
+
+		queue = append(queue, part.Parts...)
+	}
+
+	return &result, nil
 }

@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/utils"
 	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
@@ -26,7 +26,7 @@ func RequestTracing(handler http.Handler) http.Handler {
 
 		slog.Info(initialTrace)
 
-		rww := helper.NewResponseWriterWrapper(w)
+		rww := utils.NewResponseWriterWrapper(w)
 
 		handler.ServeHTTP(rww, r)
 

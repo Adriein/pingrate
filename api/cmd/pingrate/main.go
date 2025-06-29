@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/adriein/pingrate/internal/pingrate"
 	"github.com/adriein/pingrate/internal/shared/constants"
-	"github.com/adriein/pingrate/internal/shared/helper"
+	"github.com/adriein/pingrate/internal/shared/utils"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
@@ -17,7 +17,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	checker := helper.NewEnvVarChecker(
+	checker := utils.NewEnvVarChecker(
 		constants.DatabaseUser,
 		constants.DatabasePassword,
 		constants.DatabaseName,
