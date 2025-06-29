@@ -2,6 +2,7 @@ package gmail
 
 import (
 	"encoding/base64"
+	"github.com/adriein/pingrate/internal/shared/utils"
 	"github.com/rotisserie/eris"
 	"google.golang.org/api/gmail/v1"
 )
@@ -47,13 +48,16 @@ func NewMail(message *gmail.Message) (*Gmail, error) {
 }
 
 func decodeMultipartBody(message *gmail.Message) (*string, error) {
-	var queue []*gmail.MessagePart
 	var result string
 
-	queue = append(queue, message.Payload.Parts...)
+	queue := utils.NewQueue[*gmail.MessagePart](message.Payload.Parts...)
 
-	for len(queue) > 0 {
-		part := queue[0]
+	for !queue.IsEmpty() {
+		part, err := queue.Dequeue()
+
+		if err != nil {
+			return nil, err
+		}
 
 		if part.MimeType == "text/plain" {
 			byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(part.Body.Data)
@@ -67,7 +71,7 @@ func decodeMultipartBody(message *gmail.Message) (*string, error) {
 			continue
 		}
 
-		queue = append(queue, part.Parts...)
+		queue.Enqueue(part.Parts...)
 	}
 
 	return &result, nil
