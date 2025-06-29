@@ -56,10 +56,15 @@ func (ctrl *Controller) GetGmail() gin.HandlerFunc {
 			return
 		}
 
-		link := ctrl.service.GetGmailInbox(email.(string))
+		emails, err := ctrl.service.GetGmailInbox(email.(string))
+
+		if err != nil {
+			ctx.Error(err)
+			return
+		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"data": link,
+			"data": emails,
 		})
 	}
 }

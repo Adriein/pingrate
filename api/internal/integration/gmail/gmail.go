@@ -22,19 +22,23 @@ type GoogleToken struct {
 	UpdatedAt    string
 }
 type Gmail struct {
-	Body string
+	Id       string `json:"id"`
+	ThreadId string `json:"threadId"`
+	Body     string `json:"body"`
 }
 
 func NewMail(message *gmail.Message) (*Gmail, error) {
 	if message.Payload.MimeType == "text/plain" {
-		byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(message.Payload.Body.Data)
+		byteMessageBody, decodeBase64Err := base64.URLEncoding.DecodeString(message.Payload.Body.Data)
 
 		if decodeBase64Err != nil {
 			return nil, eris.New(decodeBase64Err.Error())
 		}
 
 		return &Gmail{
-			Body: string(byteMessageBody),
+			Id:       message.Id,
+			ThreadId: message.ThreadId,
+			Body:     string(byteMessageBody),
 		}, nil
 	}
 
@@ -44,7 +48,11 @@ func NewMail(message *gmail.Message) (*Gmail, error) {
 		return nil, decodeMultipartBodyErr
 	}
 
-	return &Gmail{Body: *decodedBody}, nil
+	return &Gmail{
+		Id:       message.Id,
+		ThreadId: message.ThreadId,
+		Body:     *decodedBody,
+	}, nil
 }
 
 func decodeMultipartBody(message *gmail.Message) (*string, error) {
@@ -60,7 +68,7 @@ func decodeMultipartBody(message *gmail.Message) (*string, error) {
 		}
 
 		if part.MimeType == "text/plain" {
-			byteMessageBody, decodeBase64Err := base64.StdEncoding.DecodeString(part.Body.Data)
+			byteMessageBody, decodeBase64Err := base64.URLEncoding.DecodeString(part.Body.Data)
 
 			if decodeBase64Err != nil {
 				return nil, eris.New(decodeBase64Err.Error())

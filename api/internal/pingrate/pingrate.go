@@ -27,6 +27,8 @@ func New(port string) *Pingrate {
 	engine := gin.Default()
 	router := engine.Group("/api/v1")
 
+	router.Use(middleware.Error())
+
 	app := &Pingrate{
 		database:  initDatabase(),
 		router:    router,
