@@ -83,41 +83,63 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 		return nil, gmailClientErr
 	}
 
-	response, getMessagesErr := gmailClient.Users.Messages.
-		List("me").
-		Q("after:2025/01/01 before:2025/07/01").
-		Do()
-
-	if getMessagesErr != nil {
-		return nil, eris.New(getMessagesErr.Error())
-	}
-
 	var rawResult []*Gmail
+	pageToken := ""
 
-	ch := make(chan *ResultChannelResponse)
-	var wg sync.WaitGroup
+	for {
+		/*response, getMessagesErr := gmailClient.Users.Messages.
+		List("me").
+		MaxResults(250).
+		Q("after:2025/01/01 before:2025/07/01").
+		Do()*/
 
-	for _, message := range response.Messages {
-		wg.Add(1)
+		call := gmailClient.Users.Messages.
+			List("me").
+			MaxResults(20).
+			Q("after:2025/01/01 before:2025/07/01")
 
-		go s.FetchFullEmail(gmailClient, message.Id, ch, &wg)
-	}
-
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-
-	for result := range ch {
-		if result.Err != nil {
-			return nil, eris.New(result.Err.Error())
+		if pageToken != "" {
+			call.PageToken(pageToken)
 		}
 
-		rawResult = append(rawResult, result.Gmail)
+		response, getMessagesErr := call.Do()
+
+		if getMessagesErr != nil {
+			return nil, eris.New(getMessagesErr.Error())
+		}
+
+		ch := make(chan *ResultChannelResponse)
+		var wg sync.WaitGroup
+
+		for _, message := range response.Messages {
+			wg.Add(1)
+
+			go s.FetchFullEmail(gmailClient, message.Id, ch, &wg)
+		}
+
+		go func() {
+			wg.Wait()
+			close(ch)
+		}()
+
+		for result := range ch {
+			if result.Err != nil {
+				return nil, eris.New(result.Err.Error())
+			}
+
+			rawResult = append(rawResult, result.Gmail)
+		}
+
+		if response.NextPageToken == "" {
+			break
+		}
+
+		pageToken = response.NextPageToken
+		// time.Sleep(1500 * time.Millisecond)
+		//return s.mergeThreads(rawResult), nil
 	}
 
 	return rawResult, nil
-	//return s.mergeThreads(rawResult), nil
 }
 
 func (s *Service) mergeThreads(emails []*Gmail) []*Gmail {
