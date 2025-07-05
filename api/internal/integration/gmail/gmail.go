@@ -27,6 +27,11 @@ type Gmail struct {
 	Body     string `json:"body"`
 }
 
+type ResultChannelResponse struct {
+	Gmail *Gmail
+	Err   error
+}
+
 func NewMail(message *gmail.Message) (*Gmail, error) {
 	if message.Payload.MimeType == "text/plain" {
 		byteMessageBody, decodeBase64Err := base64.URLEncoding.DecodeString(message.Payload.Body.Data)

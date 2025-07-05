@@ -18,7 +18,7 @@ func Auth(repository auth.SessionRepository) gin.HandlerFunc {
 				return
 			}
 
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": cookieErr.Error()})
+			ctx.Error(cookieErr)
 			return
 		}
 
@@ -30,7 +30,7 @@ func Auth(repository auth.SessionRepository) gin.HandlerFunc {
 				return
 			}
 
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": cookieErr.Error()})
+			ctx.Error(findByIdErr)
 			return
 		}
 

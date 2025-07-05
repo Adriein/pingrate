@@ -2,6 +2,9 @@ package gmail
 
 import (
 	"errors"
+	"github.com/rotisserie/eris"
+	"google.golang.org/api/gmail/v1"
+	"sync"
 )
 
 type Service struct {
@@ -82,29 +85,35 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 
 	response, getMessagesErr := gmailClient.Users.Messages.
 		List("me").
-		Q("after:2012/01/01 before:2012/07/01").
+		Q("after:2025/01/01 before:2025/07/01").
 		Do()
 
 	if getMessagesErr != nil {
-		return nil, getMessagesErr
+		return nil, eris.New(getMessagesErr.Error())
 	}
 
 	var rawResult []*Gmail
 
+	ch := make(chan *ResultChannelResponse)
+	var wg sync.WaitGroup
+
 	for _, message := range response.Messages {
-		fullMessage, getMessageErr := gmailClient.Users.Messages.Get("me", message.Id).Do()
+		wg.Add(1)
 
-		if getMessageErr != nil {
-			return nil, getMessageErr
+		go s.FetchFullEmail(gmailClient, message.Id, ch, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for result := range ch {
+		if result.Err != nil {
+			return nil, eris.New(result.Err.Error())
 		}
 
-		mail, mailErr := NewMail(fullMessage)
-
-		if mailErr != nil {
-			return nil, mailErr
-		}
-
-		rawResult = append(rawResult, mail)
+		rawResult = append(rawResult, result.Gmail)
 	}
 
 	return rawResult, nil
@@ -136,4 +145,29 @@ func (s *Service) mergeThreads(emails []*Gmail) []*Gmail {
 	}
 
 	return result
+}
+
+func (s *Service) FetchFullEmail(
+	client *gmail.Service,
+	messageId string,
+	ch chan<- *ResultChannelResponse,
+	wg *sync.WaitGroup,
+) {
+	defer wg.Done()
+
+	fullMessage, clientErr := client.Users.Messages.Get("me", messageId).Do()
+
+	if clientErr != nil {
+		ch <- &ResultChannelResponse{Gmail: nil, Err: eris.New(clientErr.Error())}
+		return
+	}
+
+	mail, err := NewMail(fullMessage)
+
+	if err != nil {
+		ch <- &ResultChannelResponse{Gmail: nil, Err: err}
+		return
+	}
+
+	ch <- &ResultChannelResponse{Gmail: mail, Err: nil}
 }
