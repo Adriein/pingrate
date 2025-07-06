@@ -5,6 +5,7 @@ import (
 	"github.com/adriein/pingrate/internal/shared/utils"
 	"github.com/rotisserie/eris"
 	"google.golang.org/api/gmail/v1"
+	"strings"
 )
 
 var (
@@ -88,4 +89,8 @@ func decodeMultipartBody(message *gmail.Message) (*string, error) {
 	}
 
 	return &result, nil
+}
+
+func (g *Gmail) isEmpty() bool {
+	return strings.TrimSpace(g.Body) == ""
 }

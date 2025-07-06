@@ -83,7 +83,7 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 		return nil, gmailClientErr
 	}
 
-	var rawResult []*Gmail
+	var emails []*Gmail
 	pageToken := ""
 
 	for {
@@ -96,7 +96,7 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 		call := gmailClient.Users.Messages.
 			List("me").
 			MaxResults(20).
-			Q("after:2025/01/01 before:2025/07/01")
+			Q("after:2025/01/01 before:2025/02/01")
 
 		if pageToken != "" {
 			call.PageToken(pageToken)
@@ -114,7 +114,7 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 		for _, message := range response.Messages {
 			wg.Add(1)
 
-			go s.FetchFullEmail(gmailClient, message.Id, ch, &wg)
+			go s.fetchFullEmail(gmailClient, message.Id, ch, &wg)
 		}
 
 		go func() {
@@ -127,7 +127,11 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 				return nil, eris.New(result.Err.Error())
 			}
 
-			rawResult = append(rawResult, result.Gmail)
+			if result.Gmail.isEmpty() {
+				continue
+			}
+
+			emails = append(emails, result.Gmail)
 		}
 
 		if response.NextPageToken == "" {
@@ -135,11 +139,9 @@ func (s *Service) GetGmailInbox(email string) ([]*Gmail, error) {
 		}
 
 		pageToken = response.NextPageToken
-		// time.Sleep(1500 * time.Millisecond)
-		//return s.mergeThreads(rawResult), nil
 	}
 
-	return rawResult, nil
+	return s.mergeThreads(emails), nil
 }
 
 func (s *Service) mergeThreads(emails []*Gmail) []*Gmail {
@@ -169,7 +171,7 @@ func (s *Service) mergeThreads(emails []*Gmail) []*Gmail {
 	return result
 }
 
-func (s *Service) FetchFullEmail(
+func (s *Service) fetchFullEmail(
 	client *gmail.Service,
 	messageId string,
 	ch chan<- *ResultChannelResponse,
