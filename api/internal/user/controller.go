@@ -24,22 +24,34 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 		var json CreateUserRequest
 
 		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 			return
 		}
 
 		if err := ctrl.validator.Struct(json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 			return
 		}
 
 		if err := ctrl.service.CreateUser(&json); err != nil {
 			if errors.Is(err, UserAlreadyExistError) {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				c.JSON(http.StatusBadRequest, gin.H{
+					"ok":    false,
+					"error": err.Error(),
+				})
 				return
 			}
 
-			c.Status(http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 		}
 	}
 }

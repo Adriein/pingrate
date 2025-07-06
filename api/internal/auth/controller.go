@@ -21,16 +21,22 @@ func NewController(validator *validator.Validate, service *Service) *Controller 
 }
 
 func (ctrl *Controller) Post() gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
 		var json LoginRequest
 
-		if err := c.ShouldBindJSON(&json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if err := ctx.ShouldBindJSON(&json); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 			return
 		}
 
 		if err := ctrl.validator.Struct(json); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 			return
 		}
 
@@ -38,15 +44,21 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 
 		if err != nil {
 			if errors.Is(err, user.UserIncorrectPasswordError) || errors.Is(err, user.UserNotFoundError) {
-				c.Status(http.StatusUnauthorized)
+				ctx.JSON(http.StatusUnauthorized, gin.H{
+					"ok":    false,
+					"error": err.Error(),
+				})
 				return
 			}
 
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 			return
 		}
 
-		c.SetCookie(
+		ctx.SetCookie(
 			"$session",
 			session.Id,
 			3600,
@@ -56,6 +68,8 @@ func (ctrl *Controller) Post() gin.HandlerFunc {
 			true,
 		)
 
-		c.Status(http.StatusOK)
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok": true,
+		})
 	}
 }

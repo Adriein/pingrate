@@ -18,8 +18,8 @@ func Error() gin.HandlerFunc {
 			slog.Error(eris.ToString(err, true))
 
 			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"success": false,
-				"data":    constants.ServerGenericError,
+				"ok":   false,
+				"data": constants.ServerGenericError,
 			})
 		}
 	}

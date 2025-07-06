@@ -14,7 +14,9 @@ func Auth(repository auth.SessionRepository) gin.HandlerFunc {
 
 		if cookieErr != nil {
 			if errors.Is(cookieErr, http.ErrNoCookie) {
-				ctx.Status(http.StatusUnauthorized)
+				ctx.JSON(http.StatusUnauthorized, gin.H{
+					"ok": false,
+				})
 				return
 			}
 
@@ -26,7 +28,9 @@ func Auth(repository auth.SessionRepository) gin.HandlerFunc {
 
 		if findByIdErr != nil {
 			if errors.Is(findByIdErr, auth.SessionNotFoundError) {
-				ctx.Status(http.StatusUnauthorized)
+				ctx.JSON(http.StatusUnauthorized, gin.H{
+					"ok": false,
+				})
 				return
 			}
 

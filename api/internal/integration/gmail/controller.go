@@ -28,6 +28,7 @@ func (ctrl *Controller) GetOauthLink() gin.HandlerFunc {
 		link := ctrl.service.GetGmailOauthLink(email.(string))
 
 		ctx.JSON(http.StatusOK, gin.H{
+			"ok":   true,
 			"data": link,
 		})
 	}
@@ -39,7 +40,10 @@ func (ctrl *Controller) PostGoogleOauthCallback() gin.HandlerFunc {
 		code := ctx.Query("code")
 
 		if err := ctrl.service.ExchangeGoogleToken(state, code); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"ok":    false,
+				"error": err.Error(),
+			})
 			return
 		}
 
@@ -52,7 +56,9 @@ func (ctrl *Controller) GetGmail() gin.HandlerFunc {
 		email, ok := ctx.Get(constants.SessionContextKey)
 
 		if !ok {
-			ctx.Status(http.StatusUnauthorized)
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"ok": false,
+			})
 			return
 		}
 
@@ -64,6 +70,7 @@ func (ctrl *Controller) GetGmail() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
+			"ok":   true,
 			"data": emails,
 		})
 	}
