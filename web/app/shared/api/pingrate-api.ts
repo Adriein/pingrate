@@ -48,12 +48,19 @@ export const signin = async (payload: SigninForm): Promise<PingrateApiResponse<S
     return await post<SignupResponse>("/auth", payload);
 };
 
-//INTEGRATIONS
+//GMAIL INTEGRATION
 export type AskGmailPermissionsResponse = { ok: boolean, data: string, error: string | undefined }
 
 export const askGmailPermissions = async (sessionId: string): Promise<PingrateApiResponse<AskGmailPermissionsResponse>> => {
     return await get("/integrations/gmail/oauth", { 'Cookie': `$session=${sessionId}` });
 };
+
+export type GetGmailResponse = { ok: boolean, data: Gmail[], error: string | undefined }
+export type Gmail = {id: string, threadId: string, body: string};
+
+export const getGmail = async (sessionId: string): Promise<PingrateApiResponse<GetGmailResponse>> => {
+    return await get("/integrations/gmail", { 'Cookie': `$session=${sessionId}` });
+}
 
 
 

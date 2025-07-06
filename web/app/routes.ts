@@ -6,5 +6,6 @@ export default [
     route("/signin", "routes/signin/signin.tsx"),
     route("/dashboard", "routes/dashboard/dashboard.tsx", [
         route("/dashboard/integration", "routes/dashboard/integration/integration.tsx"),
+        route("/dashboard/gmail", "routes/dashboard/gmail/inbox.tsx"),
     ]),
 ] satisfies RouteConfig;
